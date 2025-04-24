@@ -12,12 +12,19 @@ Card Class:
 Pratish
 
 GAME LOGIC
+
 Intialization: Salavat
+
 New Game: Majed
+
 Win/Lose/Draw Conditions: Sam & Salavat
+
 Switch Turns: Pratish
+
 Refresh cards: Sam
+
 PvC Component: Pratish & Majed
+
  - Include player score & computer score
 
 
