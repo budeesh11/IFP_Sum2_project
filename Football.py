@@ -62,29 +62,27 @@ class Card:
         self.card_suite = card_suite
         self.card_rank = card_rank
     
-   # def __str__(self):
-    #    return f"{self.card_rank} of {self.card_suite }" 
 
- # Creating the main deck with all the possible combinations       
-class Main_Card_Deck():
+        
+class Main_Card_Deck(): # Creating the main deck with all the suits and ranks, then shuffles
     def __init__(self):
         self.main_deck = [Card(i, suite, rank) for i, (suite, rank) in enumerate((suite, rank) for suite in card_suite() for rank in card_rank())]
         random.shuffle(self.main_deck)
 
     def player_deck(self):
-        player_deck = self.main_deck[:18]  # First 18 cards
-        self.main_deck = self.main_deck[18:]  # Remove them from main_deck
+        player_deck = self.main_deck[:18]  # Takes the first 18 cards of main_deck
+        self.main_deck = self.main_deck[18:]  # Removes them from main_deck
         return player_deck
 
     def computer_deck(self):
-        computer_deck = self.main_deck
+        computer_deck = self.main_deck # Computer takes the remainder of the cards
         return computer_deck
 
 
 
-
+# Handles the game's main logic
 class Game_Logic():
-    
+
     # Creates an instance of the player and computer deck respectively
     def __init__(self, main_deck):
         self.player_deck = main_deck.player_deck()        
@@ -101,6 +99,7 @@ class Game_Logic():
         computer_active_cards = self.computer_deck[:4]
         self.computer_deck = self.computer_deck[4:]
         return computer_active_cards
+    
     
     def player_attack(self):
         ''' compare the ranks of each of the cards 
@@ -126,10 +125,7 @@ def start_game_test():
     deck = Main_Card_Deck()
     game = Game_Logic(deck)
 
-    player_deck = deck.player_deck()
     player_active_cards = game.player_draw()
-    
-    computer_deck = deck.computer_deck()
     computer_active_cards = game.computer_draw()
     
     print("ACTIVE PLAYER CARDS")
@@ -140,10 +136,10 @@ def start_game_test():
        print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
 
     print("Player Deck")
-    for card in player_deck:
+    for card in game.player_deck:
         print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
     print("Computer Deck")
-    for card in computer_deck:
+    for card in game.computer_deck:
         print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
 
 
