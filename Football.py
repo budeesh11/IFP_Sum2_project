@@ -51,28 +51,29 @@ class game():
 def card_suite():
     return ["Clubs", "Diamonds", "Spades", "Hearts"]
 
-# Returns a list of the card values
-def card_value():
-    return ["6","7","8","9","10","K","Q","J"]
+# Returns a list of the card ranks
+def card_rank():
+    return ["6", "7", "8", "9", "10", "K", "Q", "J", "A"]
 
 # Creating a single card object with all its attributes
 class Card:
-    def __init__(self, card_suite, card_value):
+    def __init__(self, card_suite, card_rank):
         self.id = id
         self.card_suite = card_suite
-        self.card_value = card_value
+        self.card_rank = card_rank
     
     def __str__(self):
-        return f"{self.card_value} of {self.card_suite }" 
+        return f"{self.card_rank} of {self.card_suite }" 
 
  # Creating the main deck with all the possible combinations       
 class Main_Card_Deck():
     def __init__(self):
         self.deck = [] 
-        self.deck = [Card(suite, value) for suite in card_suite() for value in card_value() ] # For loop create a card object for every element in each of the card functions
-    
+        self.deck = [Card(suite, rank) for suite in card_suite() for rank in card_rank() ] # For loop create a card object for every element in each of the card functions 
 
 
+   
+ 
 
         pass
 
