@@ -80,28 +80,70 @@ class Main_Card_Deck():
         computer_deck = self.main_deck
         return computer_deck
 
-# Player Decks
-class Computer_Deck():
-    def __init__(self, deck):
-        self.cards = deck
-    
-    pass
 
-class Player_Deck():
-    def __init__(self, deck):
-        self.cards = deck
+
+
+class Game_Logic():
     
-    pass
+    # Creates an instance of the player and computer deck respectively
+    def __init__(self, main_deck):
+        self.player_deck = main_deck.player_deck()        
+        self.computer_deck = main_deck.computer_deck()
+        
+    # Draws the first 4 cards from the player's deck
+    def player_draw(self):
+        player_active_cards = self.player_deck[:4]
+        self.player_deck = self.player_deck[4:]
+        return player_active_cards
+    
+    # Draws the first 4 cards from the computer's deck
+    def computer_draw(self):
+        computer_active_cards = self.computer_deck[:4]
+        self.computer_deck = self.computer_deck[4:]
+        return computer_active_cards
+    
+    def player_attack(self):
+        ''' compare the ranks of each of the cards 
+        Nested if statements for each possible outcome. win loss or draw
+
+        Pop from the player_deck then compare that card with each of the computer's active cards then give the user the option to
+        attack the possible cards
+
+        If attack is successful then store both cards in a separate variable, using the ID as an identifier
+        If draw, the computer and player each draw an additional card until one card is greater rank the other, winner takes all the cards
+        If loss, both cards go to the end of the computer deck
+          '''
+        
+
+        pass
+
+    
+
+    
+
 
 def start_game_test():
     deck = Main_Card_Deck()
-    player_deck = Player_Deck(deck.player_deck())
-    computer_deck = Computer_Deck(deck.computer_deck())
+    game = Game_Logic(deck)
+
+    player_deck = deck.player_deck()
+    player_active_cards = game.player_draw()
+    
+    computer_deck = deck.computer_deck()
+    computer_active_cards = game.computer_draw()
+    
+    print("ACTIVE PLAYER CARDS")
+    for card in player_active_cards:
+       print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+    print("ACTIVE COMPUTER CARDS")
+    for card in computer_active_cards:
+       print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+
     print("Player Deck")
-    for card in player_deck.cards:
+    for card in player_deck:
         print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
     print("Computer Deck")
-    for card in computer_deck.cards:
+    for card in computer_deck:
         print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
 
 
