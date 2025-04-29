@@ -47,12 +47,31 @@ class game():
         pygame.quit()
         sys.exit()
 
+# Returns a list for the card suites
+def card_suite():
+    return ["Clubs", "Diamonds", "Spades", "Hearts"]
 
+# Returns a list of the card values
+def card_value():
+    return ["6","7","8","9","10","K","Q","J"]
+
+# Creating a single card object with all its attributes
 class Card:
-    def __init__(self, id, suite, card_value):
+    def __init__(self, card_suite, card_value):
         self.id = id
-        self.suite = suite
+        self.card_suite = card_suite
         self.card_value = card_value
+    
+    def __str__(self):
+        return f"{self.card_value} of {self.card_suite }" 
+
+ # Creating the main deck with all the possible combinations       
+class Main_Card_Deck():
+    def __init__(self):
+        self.deck = [] 
+        self.deck = [Card(suite, value) for suite in card_suite() for value in card_value() ] # For loop create a card object for every element in each of the card functions
+    
+
 
 
         pass
