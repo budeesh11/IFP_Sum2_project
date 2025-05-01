@@ -186,11 +186,13 @@ def start_game_test():
                     game.get_attack_card()
                     print()
                     print("Cards left: " + str(len(game.computer_deck)))
-                    print("    " + str(game.computer_active_cards[0].card_suite[0]) + game.computer_active_cards[0].card_rank + "  " + str(game.computer_active_cards[1].card_suite[0]) + game.computer_active_cards[1].card_rank + "  " + str(game.computer_active_cards[2].card_suite[0]) + game.computer_active_cards[2].card_rank)
+                    print("    " + str(game.computer_active_cards[0].card_suite[0]) + game.computer_active_cards[0].card_rank)
+                    print("    " + str(game.computer_active_cards[1].card_suite[0]) + game.computer_active_cards[1].card_rank + "  " + str(game.computer_active_cards[2].card_suite[0]) + game.computer_active_cards[2].card_rank + "  " + str(game.computer_active_cards[3].card_suite[0]) + game.computer_active_cards[3].card_rank)
                     print()
                     print("Atk:    " + str(game.attack_card.card_suite[0]) + game.attack_card.card_rank)
                     print()
-                    print("    " + str(game.player_active_cards[0].card_suite[0]) + game.player_active_cards[0].card_rank + "  " + str(game.player_active_cards[1].card_suite[0]) + game.player_active_cards[1].card_rank + "  " + str(game.player_active_cards[2].card_suite[0]) + game.player_active_cards[2].card_rank)
+                    print("    " + str(game.player_active_cards[1].card_suite[0]) + game.player_active_cards[1].card_rank + "  " + str(game.player_active_cards[2].card_suite[0]) + game.player_active_cards[2].card_rank + "  " + str(game.player_active_cards[3].card_suite[0]) + game.player_active_cards[3].card_rank)
+                    print("    " + str(game.player_active_cards[0].card_suite[0]) + game.player_active_cards[0].card_rank)
                     print("Cards left: " + str(len(game.player_deck)))
 
                     
