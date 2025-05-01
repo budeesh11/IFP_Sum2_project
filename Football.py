@@ -87,18 +87,22 @@ class Game_Logic():
     def __init__(self, main_deck):
         self.player_deck = main_deck.player_deck()        
         self.computer_deck = main_deck.computer_deck()
+        self.player_active_cards = []
+        self.computer_active_cards = []
         
     # Draws the first 4 cards from the player's deck
     def player_draw(self):
-        player_active_cards = self.player_deck[:4]
-        self.player_deck = self.player_deck[4:]
-        return player_active_cards
-    
+        if (len(self.player_active_cards) < 4 and len(self.player_deck) > 0):
+            cards_to_draw = min(4 - len(self.player_active_cards), len(self.player_deck))
+            self.player_active_cards.extend(self.player_deck[:cards_to_draw])
+            self.player_deck = self.player_deck[cards_to_draw:]
+
     # Draws the first 4 cards from the computer's deck
     def computer_draw(self):
-        computer_active_cards = self.computer_deck[:4]
-        self.computer_deck = self.computer_deck[4:]
-        return computer_active_cards
+        if (len(self.computer_active_cards) < 4 and len(self.computer_deck) > 0):
+            cards_to_draw = min(4 - len(self.computer_active_cards), len(self.computer_deck))
+            self.computer_active_cards.extend(self.computer_deck[:cards_to_draw])
+            self.computer_deck = self.computer_deck[cards_to_draw:]
     
     
     def player_attack(self):
@@ -124,23 +128,28 @@ class Game_Logic():
 def start_game_test():
     deck = Main_Card_Deck()
     game = Game_Logic(deck)
-
-    player_active_cards = game.player_draw()
-    computer_active_cards = game.computer_draw()
     
-    print("ACTIVE PLAYER CARDS")
-    for card in player_active_cards:
-       print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
-    print("ACTIVE COMPUTER CARDS")
-    for card in computer_active_cards:
-       print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+    while True:
+        user_input = input()
+        if (user_input == "1"):
+            print()
+            print("ACTIVE PLAYER CARDS")
+            for card in game.player_active_cards:
+                print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+            print("ACTIVE COMPUTER CARDS")
+            for card in game.computer_active_cards:
+                print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
 
-    print("Player Deck")
-    for card in game.player_deck:
-        print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
-    print("Computer Deck")
-    for card in game.computer_deck:
-        print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+            print("Player Deck")
+            for card in game.player_deck:
+                print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+            print("Computer Deck")
+            for card in game.computer_deck:
+                print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+        if (user_input == "2"):
+            game.player_draw()
+            game.computer_draw()
+        
 
 
 if __name__ == "__main__":
