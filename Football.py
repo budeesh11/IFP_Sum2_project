@@ -89,6 +89,12 @@ class Game_Logic():
         self.computer_deck = main_deck.computer_deck()
         self.player_active_cards = []
         self.computer_active_cards = []
+        self.attacked_cards = {}
+        self.draw = []
+        
+        # PLayer - true, Computer - false
+        self.attacker = True
+        self.attack_card = Card(-1, "temp", "temp")
         
     # Draws the first 4 cards from the player's deck
     def player_draw(self):
@@ -103,6 +109,16 @@ class Game_Logic():
             cards_to_draw = min(4 - len(self.computer_active_cards), len(self.computer_deck))
             self.computer_active_cards.extend(self.computer_deck[:cards_to_draw])
             self.computer_deck = self.computer_deck[cards_to_draw:]
+    
+    def get_attack_card(self):
+        if (self.attacker and len(self.player_deck) > 0):
+            self.attack_card = self.player_deck[0]
+            self.player_deck = self.player_deck[1:]
+        elif (not self.attacker and len(self.computer_deck) > 0):
+            self.attack_card = self.computer_deck[0]
+            self.computer_deck = self.computer_deck[1:] 
+            
+            
     
     
     def player_attack(self):
@@ -128,6 +144,7 @@ class Game_Logic():
 def start_game_test():
     deck = Main_Card_Deck()
     game = Game_Logic(deck)
+    os.system("clear")
     
     while True:
         user_input = input()
@@ -146,9 +163,37 @@ def start_game_test():
             print("Computer Deck")
             for card in game.computer_deck:
                 print("Id: " + str(card.id) + " Suite: " + card.card_suite + " Rank: " + card.card_rank)
+            
+            print("Attack card")
+            print("Id: " + str(game.attack_card.id) + " Suite: " + game.attack_card.card_suite + " Rank: " + game.attack_card.card_rank)
+     
         if (user_input == "2"):
             game.player_draw()
             game.computer_draw()
+        if (user_input == "3"):
+            game.get_attack_card()
+            print("Attack card")
+            print("Id: " + str(game.attack_card.id) + " Suite: " + game.attack_card.card_suite + " Rank: " + game.attack_card.card_rank)
+        if (user_input == "4"):
+            print("Move change")
+            game.attacker = not game.attacker
+        if (user_input == "5"):
+            while True:
+                user_input = input()
+                if (user_input == "1"):
+                    game.player_draw()
+                    game.computer_draw()
+                    game.get_attack_card()
+                    print()
+                    print("Cards left: " + str(len(game.computer_deck)))
+                    print("    " + str(game.computer_active_cards[0].card_suite[0]) + game.computer_active_cards[0].card_rank + "  " + str(game.computer_active_cards[1].card_suite[0]) + game.computer_active_cards[1].card_rank + "  " + str(game.computer_active_cards[2].card_suite[0]) + game.computer_active_cards[2].card_rank)
+                    print()
+                    print("Atk:    " + str(game.attack_card.card_suite[0]) + game.attack_card.card_rank)
+                    print()
+                    print("    " + str(game.player_active_cards[0].card_suite[0]) + game.player_active_cards[0].card_rank + "  " + str(game.player_active_cards[1].card_suite[0]) + game.player_active_cards[1].card_rank + "  " + str(game.player_active_cards[2].card_suite[0]) + game.player_active_cards[2].card_rank)
+                    print("Cards left: " + str(len(game.player_deck)))
+
+                    
         
 
 
