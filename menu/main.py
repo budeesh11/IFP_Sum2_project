@@ -1,7 +1,8 @@
 from tempfootball import game
+import pygame
 
 g = game()
 
 while g.running: #while the game is running
-    g.playing = True
+    g.curr_menu.display_menu()
     g.game_loop()
