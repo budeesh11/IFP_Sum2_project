@@ -141,17 +141,15 @@ class Game_Logic():
                     self.computer_active_cards_reference.append(ref_card)
                     break
         
-        # self.computer active cards reference = [0,5,2,2] --> id of cards
-        # self. computer active cards = [0,32,2,11] 
-        # zip(self.computer_active_cards_reference, self.computer_active_cards) = ([0,0], [5,32], [2,2], [2,11])
+    
         for reference_card, active_card in zip(self.computer_active_cards_reference, self.computer_active_cards):
             if self.attack_card_reference.id > reference_card.id:
                 print("Attack Successful")
                 
-                self.attacked_cards.update({self.attack_card : active_card}) # Stores the attack card with the card it won against
+                self.attacked_cards.update({self.attack_card : active_card}) #stores the attack card with the card it won against
                 
                 self.get_attack_card()
-                get_attack_card_reference() # New attack card with its reference
+                get_attack_card_reference() #new attack card with its reference
 
             elif self.attack_card_reference.id == reference_card.id: #if draw, the computer and player each draw additional cards until one card is greater rank the other, winner takes all the cards
                 
@@ -195,7 +193,7 @@ class Game_Logic():
 
             elif self.attack_card_reference.id < reference_card.id:
                 print("Attack Failed")               
-                break
+                break                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
             ''' compare the ranks of each of the cards
         Nested if statements for each possible outcome. win loss or draw
 
@@ -215,7 +213,79 @@ class Game_Logic():
                 if it can beat a card then the computer will win the card and add it to its deck, if computer beats goalkeeper then computer scores a goal
                 whichever side reaches 3 goals first wins the game
             '''
-            pass
+            self.reference_deck = [Card(i, suite, rank) for i, (suite, rank) in enumerate((suite, rank) for suite in card_suite() for rank in card_rank())] # Deck ordered in terms of Rank
+            
+            self.attack_card_reference = None
+            for card in self.reference_deck:
+                if card.card_rank == self.attack_card.card_rank:
+                    self.attack_card_reference = card
+                    break
+
+            player_cards_reference = []
+            for card in self.player_active_cards:
+                for ref_card in self.reference_deck:
+                    if ref_card.card_rank == card.card_rank:
+                        player_cards_reference.append((ref_card, card))
+                        break
+
+            target_card = None
+            target_ref = None
+            for ref_card, active_card in player_cards_reference:
+                if self.attack_card_reference.id > ref_card.id:
+                    if target_ref is None or ref_card.id > target_ref.id:
+                        target_ref = ref_card
+                        target_card = active_card
+                
+            #execute attack
+            if target_card < self.attack_card_reference.id:
+                print(f"Computer attacks with {self.attack_card.card_rank} against {target_card.card_rank}")
+                self.attacked_cards[self.attack_card] = target_card
+                self.player_active_cards.remove(target_card)
+                print("Attack Successful")
+                return True
+                
+            elif any(ref_card[0].id == self.attack_card_reference.id for ref_card in player_cards_reference):
+                #handle draw case
+                draw_card = next(card for ref, card in player_cards_reference 
+                                if ref.id == self.attack_card_reference.id)
+                print(f"It's a tie between {self.attack_card.card_rank} and {draw_card.card_rank}!")
+                draw_pile = [self.attack_card, draw_card]
+                self.player_active_cards.remove(draw_card)
+                
+                while True:
+                    if len(self.computer_deck) == 0 or len(self.player_deck) == 0:
+                        break
+                        
+                    computer_draw = self.computer_deck.pop(0)
+                    player_draw = self.player_deck.pop(0)
+                    draw_pile.extend([computer_draw, player_draw])
+                    
+                    #get references for drawn cards
+                    comp_ref = next(card for card in self.reference_deck 
+                                if card.card_rank == computer_draw.card_rank)
+                    player_ref = next(card for card in self.reference_deck 
+                                    if card.card_rank == player_draw.card_rank)
+                                    
+                    print(f"Draw cards - Computer: {computer_draw.card_rank}, Player: {player_draw.card_rank}")
+                    
+                    if comp_ref.id > player_ref.id:
+                        print("Computer wins the draw!")
+                        self.computer_deck.extend(draw_pile)
+                        break
+                    elif comp_ref.id < player_ref.id:
+                        print("Player wins the draw!")
+                        self.player_deck.extend(draw_pile)
+                        break
+                    else:
+                        print("Another tie! Drawing again...")
+                        continue
+                        
+            else:
+                print(f"Computer attack failed with {self.attack_card.card_rank}")
+                self.player_deck.append(self.attack_card)
+                return False
+
+        pass
         
        
         
