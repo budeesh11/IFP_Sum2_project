@@ -53,7 +53,7 @@ def card_suite():
 
 # Returns a list of the card ranks
 def card_rank():
-    return ["6", "7", "8", "9", "10", "K", "Q", "J", "A"]
+    return ["6", "7", "8", "9", "10", "J", "Q", "K", "A"]
 
 # Creating a single card object with all its attributes
 class Card:
@@ -118,23 +118,179 @@ class Game_Logic():
             self.attack_card = self.computer_deck[0]
             self.computer_deck = self.computer_deck[1:] 
             
-            
-    
     
     def player_attack(self):
-        ''' compare the ranks of each of the cards 
+        
+        self.reference_deck = [Card(i, suite, rank) for i, (suite, rank) in enumerate((suite, rank) for suite in card_suite() for rank in card_rank())] # Deck ordered in terms of Rank
+
+        self.attack_card_reference = Card(-1, "temp", "temp") # Initialize the reference card for the attack card
+
+        def get_attack_card_reference():   # Function to get reference card for the attack card
+            for card in self.reference_deck:
+                if card.card_rank == self.attack_card.card_rank:
+                    self.attack_card_reference = card
+                    break
+        
+        get_attack_card_reference() # Getting the reference for the first attack card
+    
+        self.computer_active_cards_reference = [] # Temporarily stores the reference cards for the computer_active_cards
+       
+        for card in self.computer_active_cards: # Gets reference cards for the computer_active_cards
+            for ref_card in self.reference_deck: 
+                if ref_card.card_rank == card.card_rank:
+                    self.computer_active_cards_reference.append(ref_card)
+                    break
+        
+    
+        for reference_card, active_card in zip(self.computer_active_cards_reference, self.computer_active_cards):
+            if self.attack_card_reference.id > reference_card.id:
+                print("Attack Successful")
+                
+                self.attacked_cards.update({self.attack_card : active_card}) #stores the attack card with the card it won against
+                
+                self.get_attack_card()
+                get_attack_card_reference() #new attack card with its reference
+
+            elif self.attack_card_reference.id == reference_card.id: #if draw, the computer and player each draw additional cards until one card is greater rank the other, winner takes all the cards
+                
+                print("Its a tie!")
+                draw_pile = [self.attack_card, active_card]  #store cards involved in draw
+                 
+                while True:
+                    #check if either deck is empty
+                    if len(self.player_deck) == 0 or len(self.computer_deck) == 0:
+                        break
+                        
+                    #draw new cards from both decks
+                    player_draw_card = self.player_deck.pop(0)
+                    computer_draw_card = self.computer_deck.pop(0)
+                    draw_pile.extend([player_draw_card, computer_draw_card])
+                                                                    #get reference cards for comparison
+                    player_draw_ref = None
+                    computer_draw_ref = None
+                    
+                    for ref_card in self.reference_deck:
+                        if ref_card.card_rank == player_draw_card.card_rank:
+                            player_draw_ref = ref_card
+                        if ref_card.card_rank == computer_draw_card.card_rank:
+                            computer_draw_ref = ref_card
+                            
+                    print(f"Draw cards - Player: {player_draw_card.card_rank}, Computer: {computer_draw_card.card_rank}")
+                    
+                    if player_draw_ref.id > computer_draw_ref.id:
+                        print("Player wins the draw!")
+                        self.player_deck.extend(draw_pile)  #add all cards to players deck
+                        break
+                    elif player_draw_ref.id < computer_draw_ref.id:
+                        print("Computer wins the draw!")
+                        self.computer_deck.extend(draw_pile)  # Add all cards to computers deck
+                        break
+                    else:
+                        print("Another tie! Drawing again...")
+                        continue
+                        
+             
+
+            elif self.attack_card_reference.id < reference_card.id:
+                print("Attack Failed")               
+                break                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+            ''' compare the ranks of each of the cards
         Nested if statements for each possible outcome. win loss or draw
 
         Pop from the player_deck then compare that card with each of the computer's active cards then give the user the option to
         attack the possible cards
 
-        If attack is successful then store both cards in a separate variable, using the ID as an identifier
-        If draw, the computer and player each draw an additional card until one card is greater rank the other, winner takes all the cards
-        If loss, both cards go to the end of the computer deck
+        If attack is successful then store both cards in a separate dictionary, using the ID as an identifier
+        If draw, the computer and player each draw additional cards until one card is greater rank the other, winner takes all the cards
+        If loss, both cards go to the bottom of the computer deck
           '''
-        
+            
+        def computer_attack(self):
+            
+            ''' Computer will draw a card from its deck and attack the players cards.
+                It will choose which card to attack based on the number of the players cards and it will attack the biggest card that it can beat
+                if it can beat any. If it cannot beat any then the attack will fail and the computer will lose the card to the players deck
+                if it can beat a card then the computer will win the card and add it to its deck, if computer beats goalkeeper then computer scores a goal
+                whichever side reaches 3 goals first wins the game
+            '''
+            self.reference_deck = [Card(i, suite, rank) for i, (suite, rank) in enumerate((suite, rank) for suite in card_suite() for rank in card_rank())] # Deck ordered in terms of Rank
+            
+            self.attack_card_reference = None
+            for card in self.reference_deck:
+                if card.card_rank == self.attack_card.card_rank:
+                    self.attack_card_reference = card
+                    break
+
+            player_cards_reference = []
+            for card in self.player_active_cards:
+                for ref_card in self.reference_deck:
+                    if ref_card.card_rank == card.card_rank:
+                        player_cards_reference.append((ref_card, card))
+                        break
+
+            target_card = None
+            target_ref = None
+            for ref_card, active_card in player_cards_reference:
+                if self.attack_card_reference.id > ref_card.id:
+                    if target_ref is None or ref_card.id > target_ref.id:
+                        target_ref = ref_card
+                        target_card = active_card
+                
+            #execute attack
+            if target_card < self.attack_card_reference.id:
+                print(f"Computer attacks with {self.attack_card.card_rank} against {target_card.card_rank}")
+                self.attacked_cards[self.attack_card] = target_card
+                self.player_active_cards.remove(target_card)
+                print("Attack Successful")
+                return True
+                
+            elif any(ref_card[0].id == self.attack_card_reference.id for ref_card in player_cards_reference):
+                #handle draw case
+                draw_card = next(card for ref, card in player_cards_reference 
+                                if ref.id == self.attack_card_reference.id)
+                print(f"It's a tie between {self.attack_card.card_rank} and {draw_card.card_rank}!")
+                draw_pile = [self.attack_card, draw_card]
+                self.player_active_cards.remove(draw_card)
+                
+                while True:
+                    if len(self.computer_deck) == 0 or len(self.player_deck) == 0:
+                        break
+                        
+                    computer_draw = self.computer_deck.pop(0)
+                    player_draw = self.player_deck.pop(0)
+                    draw_pile.extend([computer_draw, player_draw])
+                    
+                    #get references for drawn cards
+                    comp_ref = next(card for card in self.reference_deck 
+                                if card.card_rank == computer_draw.card_rank)
+                    player_ref = next(card for card in self.reference_deck 
+                                    if card.card_rank == player_draw.card_rank)
+                                    
+                    print(f"Draw cards - Computer: {computer_draw.card_rank}, Player: {player_draw.card_rank}")
+                    
+                    if comp_ref.id > player_ref.id:
+                        print("Computer wins the draw!")
+                        self.computer_deck.extend(draw_pile)
+                        break
+                    elif comp_ref.id < player_ref.id:
+                        print("Player wins the draw!")
+                        self.player_deck.extend(draw_pile)
+                        break
+                    else:
+                        print("Another tie! Drawing again...")
+                        continue
+                        
+            else:
+                print(f"Computer attack failed with {self.attack_card.card_rank}")
+                self.player_deck.append(self.attack_card)
+                return False
 
         pass
+        
+       
+        
+
+        
 
     
 
@@ -170,10 +326,15 @@ def start_game_test():
         if (user_input == "2"):
             game.player_draw()
             game.computer_draw()
+            game.player_attack()
         if (user_input == "3"):
+            game.computer_draw()
             game.get_attack_card()
-            print("Attack card")
-            print("Id: " + str(game.attack_card.id) + " Suite: " + game.attack_card.card_suite + " Rank: " + game.attack_card.card_rank)
+            #print("Attack card")
+            #print("Id: " + str(game.attack_card.id) + " Suite: " + game.attack_card.card_suite + " Rank: " + game.attack_card.card_rank)
+            game.player_attack()
+            
+
         if (user_input == "4"):
             print("Move change")
             game.attacker = not game.attacker
@@ -194,6 +355,8 @@ def start_game_test():
                     print("    " + str(game.player_active_cards[1].card_suite[0]) + game.player_active_cards[1].card_rank + "  " + str(game.player_active_cards[2].card_suite[0]) + game.player_active_cards[2].card_rank + "  " + str(game.player_active_cards[3].card_suite[0]) + game.player_active_cards[3].card_rank)
                     print("    " + str(game.player_active_cards[0].card_suite[0]) + game.player_active_cards[0].card_rank)
                     print("Cards left: " + str(len(game.player_deck)))
+        else:
+            break
 
                     
         
