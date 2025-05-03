@@ -153,15 +153,50 @@ class Game_Logic():
                 self.get_attack_card()
                 get_attack_card_reference() # New attack card with its reference
 
-            elif self.attack_card_reference.id == reference_card.id: #If draw, the computer and player each draw additional cards until one card is greater rank the other, winner takes all the cards
+            elif self.attack_card_reference.id == reference_card.id: #if draw, the computer and player each draw additional cards until one card is greater rank the other, winner takes all the cards
+                
                 print("Its a tie!")
+                draw_pile = [self.attack_card, active_card]  #store cards involved in draw
+                 
+                while True:
+                    #check if either deck is empty
+                    if len(self.player_deck) == 0 or len(self.computer_deck) == 0:
+                        break
+                        
+                    #draw new cards from both decks
+                    player_draw_card = self.player_deck.pop(0)
+                    computer_draw_card = self.computer_deck.pop(0)
+                    draw_pile.extend([player_draw_card, computer_draw_card])
+                                                                    #get reference cards for comparison
+                    player_draw_ref = None
+                    computer_draw_ref = None
+                    
+                    for ref_card in self.reference_deck:
+                        if ref_card.card_rank == player_draw_card.card_rank:
+                            player_draw_ref = ref_card
+                        if ref_card.card_rank == computer_draw_card.card_rank:
+                            computer_draw_ref = ref_card
+                            
+                    print(f"Draw cards - Player: {player_draw_card.card_rank}, Computer: {computer_draw_card.card_rank}")
+                    
+                    if player_draw_ref.id > computer_draw_ref.id:
+                        print("Player wins the draw!")
+                        self.player_deck.extend(draw_pile)  #add all cards to players deck
+                        break
+                    elif player_draw_ref.id < computer_draw_ref.id:
+                        print("Computer wins the draw!")
+                        self.computer_deck.extend(draw_pile)  # Add all cards to computers deck
+                        break
+                    else:
+                        print("Another tie! Drawing again...")
+                        continue
+                        
+             
 
             elif self.attack_card_reference.id < reference_card.id:
                 print("Attack Failed")               
                 break
-        
-        
-        ''' compare the ranks of each of the cards 
+            ''' compare the ranks of each of the cards
         Nested if statements for each possible outcome. win loss or draw
 
         Pop from the player_deck then compare that card with each of the computer's active cards then give the user the option to
@@ -171,6 +206,18 @@ class Game_Logic():
         If draw, the computer and player each draw additional cards until one card is greater rank the other, winner takes all the cards
         If loss, both cards go to the bottom of the computer deck
           '''
+            
+        def computer_attack(self):
+            
+            ''' Computer will draw a card from its deck and attack the players cards.
+                It will choose which card to attack based on the number of the players cards and it will attack the biggest card that it can beat
+                if it can beat any. If it cannot beat any then the attack will fail and the computer will lose the card to the players deck
+                if it can beat a card then the computer will win the card and add it to its deck, if computer beats goalkeeper then computer scores a goal
+                whichever side reaches 3 goals first wins the game
+            '''
+            pass
+        
+       
         
 
         
