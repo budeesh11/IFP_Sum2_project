@@ -3,6 +3,6 @@ import pygame
 
 g = game()
 
-while g.running: #while the game is running
+while g.running:
     g.curr_menu.display_menu()
     g.game_loop()

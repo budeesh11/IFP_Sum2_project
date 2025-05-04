@@ -22,12 +22,16 @@ class game():
         self.field_image = pygame.transform.scale(self.field_image, (self.DISPLAY_W, self.DISPLAY_H))
         self.instructions_image = pygame.image.load("menu/Instructions.png").convert()
         self.instructions_image = pygame.transform.scale(self.instructions_image, (self.DISPLAY_W, self.DISPLAY_H))
-        self.options_image = pygame.image.load("menu/Instructions (1).png").convert()
+        self.options_image = pygame.image.load("menu/Instructions (2).png").convert()
         self.options_image = pygame.transform.scale(self.options_image, (self.DISPLAY_W, self.DISPLAY_H))
         self.options_menu = OptionsMenu(self)
         self.instructions_menu = InstructionsMenu(self)
         self.main_menu = MainMenu(self)
         self.curr_menu = self.main_menu #current menu
+        pygame.mixer.music.load("menu/Dummy.mp3") #loads the music
+        pygame.mixer.music.play(-1) #plays the music on loop
+        pygame.mixer.music.set_volume(0.5) #sets the volume to 50% intially
+
 
     def game_loop(self): #performs the game functions
         while self.playing:
@@ -40,7 +44,7 @@ class game():
             pygame.display.update() #updates the screen
             self.reset() #resets the keys
 
-    #checks for player input but going through all list of everything a player can input
+    #checks for player input by going through all list of everything a player can input
     def check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -59,7 +63,7 @@ class game():
     def reset(self): #resets the keys after they have been clicked
         self.UP_KEY, self.DOWN_KEY, self.START_KEY, self.BACK_KEY = False, False, False, False
 
-    #draws text to the screen
+    #draws text on the screen
     def draw_text(self, text, size, color, x, y):
         font = pygame.font.Font(self.font_name, size)
         text_surface = font.render(text, True, color)
