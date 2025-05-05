@@ -93,6 +93,8 @@ class Game_Logic():
         self.computer_active_cards = []
         self.attacked_cards = {}
         self.draw = []
+        self.player_goal = 0
+        self.computer_goal = 0
         
         # PLayer - true, Computer - false
         self.attacker = True
@@ -229,12 +231,37 @@ class Game_Logic():
             return True
         elif result == "draw" and not target.beaten:
             print(f"Draw between {self.attack_card.card_rank} and {target.card_rank}!")
+            self._draw_situation(target)
             return "draw"
         else:
             self.computer_deck.append(self.attack_card)
             self._move_change()
             print("Fail")
             return False
+    
+    def _check_win_condition(self):
+        if self.computer_goal == 3 or self.player_deck == 0:
+            print("Computer wins!")
+        elif self.player_goal == 3 or self.computer_deck == 0:
+            print("Player wins!")
+    
+    def _goal_condition(self):
+        counter = 0
+        if self.attacker:
+            for card in self.computer_deck:
+                if card.beaten:
+                    counter+1
+        else:
+            for card in self.player_deck:
+                if card.beaten:
+                    counter+1
+        
+        if counter == 4:
+            if self.attacker:
+                self.player_goal+1
+            else:
+                self.computer_goal+1
+            self._move_change
     
     def _move_change(self):
         # Player move end
@@ -307,6 +334,7 @@ class Game_Logic():
         print("Cards left: " + str(len(self.player_deck)))
         print("Defender: 1-3")
         print("Goalkeeper: 0 (Only after beating all defenders)")
+        print(str(self.player_goal) + " : " + str(self.computer_goal))
     
     def temp_state_game_draw(self):
         print()
@@ -354,9 +382,10 @@ class Game_Logic():
     
     def handle_defender_attack(self, defender_index):
         if len(self.computer_active_cards) > defender_index:
-            if self.proper_attack(self.computer_active_cards[defender_index]):
+            result = self.proper_attack(self.computer_active_cards[defender_index])
+            if result == True:
                 self.computer_active_cards[defender_index].beaten = True
-            elif (self.proper_attack(self.computer_active_cards[defender_index]) == "draw"):
+            elif result == "draw":
                 self.temp_state_game_draw()
         else:
             if defender_index == 0:
@@ -370,16 +399,24 @@ class Game_Logic():
         winner = ""
         self.draw.append(self.attack_card)
         self.draw.append(attacked_card)
-        while(draw):
+        while draw:
             self.get_attack_card()
             self.draw.append(self.attack_card)
             
             if self.attacker:
-                self.draw.append(self.computer_deck[0])
-                self.computer_deck = self.computer_deck[0:]
+                if self.computer_deck:
+                    self.draw.append(self.computer_deck.pop(0))
+                else:
+                    print("Computer deck is empty!")
+                    winner = "P"
+                    break
             else:
-                self.draw.append(self.player_deck[0])
-                self.player_deck = self.player_deck[0:]
+                if self.player_deck:
+                    self.draw.append(self.player_deck.pop(0))
+                else:
+                    print("Player deck is empty!")
+                    winner = "C"
+                    break
             
             attacker = CARDS_ORDER.index(str(self.draw[-2].card_rank))
             defender = CARDS_ORDER.index(str(self.draw[-1].card_rank))
@@ -387,19 +424,25 @@ class Game_Logic():
             if attacker > defender:
                 if self.attacker:
                     winner = "P"
-                    draw = False
                 else:
                     winner = "C"
-                    draw = False
+                draw = False
             elif attacker < defender:
                 if not self.attacker:
                     winner = "P"
-                    draw = False
                 else:
                     winner = "C"
-                    draw = False
-            self._print_draw_situation()
-            print(self.draw)
+                draw = False
+        if winner == "P":
+            self.player_deck.extend(self.draw)
+        elif winner == "C":
+            self.computer_deck.extend(self.draw)
+        
+        print([f"{c.card_suite[0]}{c.card_rank}" for c in self.draw])
+        self.draw.clear()    
+        
+        self._print_draw_situation()
+        print(f"Draw winner: {winner}")
 
         
 
