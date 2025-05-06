@@ -227,16 +227,23 @@ class Game_Logic():
     def proper_attack(self, target):
         result = self._check_valid_attack(self.attack_card, target)
         if result == True and not target.beaten:
+            # Store the attack_card and target in attacked_cards dict without moving them yet
             self.attacked_cards[self.attack_card] = target
+            # Mark the target as beaten to prevent attacking it again
+            target.beaten = True
+            # Get a new attack card
             self.get_attack_card()
             print("Success")
             return True
         elif result == "draw" and not target.beaten:
             print(f"Draw between {self.attack_card.card_rank} and {target.card_rank}!")
+            # Handle draw situation - the method will take care of the cards
             self._draw_situation(target)
             return "draw"
         else:
+            # Attack failed, return the attack card to the appropriate deck
             self.computer_deck.append(self.attack_card)
+            # Reset attack card state and get a new one
             self._move_change()
             print("Fail")
             return False
@@ -402,9 +409,8 @@ class Game_Logic():
     def handle_defender_attack(self, defender_index):
         if len(self.computer_active_cards) > defender_index:
             result = self.proper_attack(self.computer_active_cards[defender_index])
-            if result == True:
-                self.computer_active_cards[defender_index].beaten = True
-            elif result == "draw":
+            # No need to mark as beaten again - proper_attack already did this for 'True' result
+            if result == "draw":
                 self.temp_state_game_draw()
                 
         else:
@@ -420,21 +426,44 @@ class Game_Logic():
         draw = True
         winner = ""
         self.draw.append(self.attack_card)
+        
         self.draw.append(attacked_card)
+        if attacked_card in self.computer_active_cards:
+            self.computer_active_cards.remove(attacked_card)
+        elif attacked_card in self.player_active_cards:
+            self.player_active_cards.remove(attacked_card)
+        
+        self.attack_card = Card(-1, "temp", "temp")
+        
         while draw:
-            self.get_attack_card()
-            self.draw.append(self.attack_card)
-            
             if self.attacker:
+                if self.player_deck:
+                    draw_card = self.player_deck.pop(0)
+                    self.draw.append(draw_card)
+                else:
+                    print("Player deck is empty!")
+                    winner = "C"
+                    break
+                    
                 if self.computer_deck:
-                    self.draw.append(self.computer_deck.pop(0))
+                    draw_card = self.computer_deck.pop(0)
+                    self.draw.append(draw_card)
                 else:
                     print("Computer deck is empty!")
                     winner = "P"
                     break
             else:
+                if self.computer_deck:
+                    draw_card = self.computer_deck.pop(0)
+                    self.draw.append(draw_card)
+                else:
+                    print("Computer deck is empty!")
+                    winner = "P"
+                    break
+                    
                 if self.player_deck:
-                    self.draw.append(self.player_deck.pop(0))
+                    draw_card = self.player_deck.pop(0)
+                    self.draw.append(draw_card)
                 else:
                     print("Player deck is empty!")
                     winner = "C"
@@ -455,36 +484,86 @@ class Game_Logic():
                 else:
                     winner = "C"
                 draw = False
+        
         if winner == "P":
+            # Mark cards from active areas as beaten
             for draw_card in self.draw:
-                if draw_card in self.player_active_cards or draw_card in self.computer_active_cards:
+                if draw_card in self.player_active_cards:
                     draw_card.beaten = True
+                elif draw_card in self.computer_active_cards:
+                    draw_card.beaten = True
+            # Add all draw cards to player's deck
             self.player_deck.extend(self.draw)
         elif winner == "C":
+            # Mark cards from active areas as beaten
             for draw_card in self.draw:
-                if draw_card in self.player_active_cards or draw_card in self.computer_active_cards:
+                if draw_card in self.player_active_cards:
                     draw_card.beaten = True
+                elif draw_card in self.computer_active_cards:
+                    draw_card.beaten = True
+            # Add all draw cards to computer's deck
             self.computer_deck.extend(self.draw)
         
+        # Display the draw situation before clearing
+        self._print_draw_situation()
+        print(f"Draw winner: {winner}")
+        
+        # Handle turn changes based on winner
         if winner == "P" and not self.attacker:
+            self.draw.clear()
             self._move_change()
             return
         elif winner == "C" and self.attacker:
+            self.draw.clear()
             self._move_change()
             return
-        self._print_draw_situation()  
-        print(f"Draw winner: {winner}")
+        
+        # Clear the draw pile BEFORE getting a new attack card
         self.draw.clear()
+        # Get a new attack card for the next turn
         self.get_attack_card()
 
-    # Debug method. Hard to count every time 
     def _debug_card_count(self):
-        total = (len(self.computer_deck) + len(self.computer_active_cards) + 
-                 len(self.player_deck) + len(self.player_active_cards) + 
-                 (1 if self.attack_card.id != -1 else 0) +
-                 len(self.draw)
-                 )
+        # Calculate total expected cards in the game (should be 36)
+        player_cards = len(self.player_deck) + len(self.player_active_cards)
+        computer_cards = len(self.computer_deck) + len(self.computer_active_cards)
+        
+        # Only count the attack card if it's a valid card (not the placeholder)
+        attack_card = 1 if self.attack_card.id != -1 else 0
+        
+        # Cards in the draw pile
+        draw_cards = len(self.draw)
+        
+        # Calculate total
+        total = player_cards + computer_cards + attack_card + draw_cards
+        
+        # Print debug info
         print(f"DEBUG: Total cards: {total}")
+        print(f"DEBUG: Player cards: {player_cards}, Computer cards: {computer_cards}")
+        print(f"DEBUG: Attack card: {attack_card}, Draw cards: {draw_cards}")
+        
+        # Check if count is wrong
+        if total != 36:
+            print("WARNING: Card count is incorrect! Should be 36.")
+            
+            # Check for duplicates in player and computer active cards
+            all_cards = []
+            for card in self.player_deck + self.player_active_cards + self.computer_deck + self.computer_active_cards:
+                if card.id in [c.id for c in all_cards]:
+                    print(f"Duplicate card found: ID {card.id}, {card.card_suite} {card.card_rank}")
+                all_cards.append(card)
+            
+            # Include the attack card if valid
+            if self.attack_card.id != -1:
+                if self.attack_card.id in [c.id for c in all_cards]:
+                    print(f"Attack card is duplicated: ID {self.attack_card.id}")
+                all_cards.append(self.attack_card)
+            
+            # Check for duplicates in the draw pile
+            for card in self.draw:
+                if card.id in [c.id for c in all_cards]:
+                    print(f"Card in draw pile is duplicated: ID {card.id}")
+                all_cards.append(card)
 
 def start_game_test():
     deck = Main_Card_Deck()
