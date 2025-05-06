@@ -93,6 +93,8 @@ class Game_Logic():
         self.computer_active_cards = []
         self.attacked_cards = {}
         self.draw = []
+        self.player_goal = 0
+        self.computer_goal = 0
         
         # PLayer - true, Computer - false
         self.attacker = True
@@ -202,12 +204,16 @@ class Game_Logic():
 
         pass
     
-    def _check_valid_attack(self, attacker, target) -> bool:
+    def _check_valid_attack(self, attacker, target):
         attack_card_value = CARDS_ORDER.index(str(attacker.card_rank))
         target_card_value = CARDS_ORDER.index(str(target.card_rank))
-        if (attack_card_value == 0 and target_card_value == 8):
+        if attack_card_value == target_card_value:
+            return "draw"
+        if attack_card_value == 0 and target_card_value == 8:
             return True
-        return attack_card_value > target_card_value
+        if attack_card_value > target_card_value:
+            return True
+        return False
 
     def _goalkeeper(self):
         for i in range(len(self.computer_active_cards)):
@@ -217,16 +223,45 @@ class Game_Logic():
                 return True
     
     def proper_attack(self, target):
-        if (self._check_valid_attack(self.attack_card, target) and target.beaten == False):
+        result = self._check_valid_attack(self.attack_card, target)
+        if result == True and not target.beaten:
             self.attacked_cards[self.attack_card] = target
             self.get_attack_card()
             print("Success")
             return True
+        elif result == "draw" and not target.beaten:
+            print(f"Draw between {self.attack_card.card_rank} and {target.card_rank}!")
+            self._draw_situation(target)
+            return "draw"
         else:
             self.computer_deck.append(self.attack_card)
             self._move_change()
             print("Fail")
             return False
+    
+    def _check_win_condition(self):
+        if self.computer_goal == 3 or self.player_deck == 0:
+            print("Computer wins!")
+        elif self.player_goal == 3 or self.computer_deck == 0:
+            print("Player wins!")
+    
+    def _goal_condition(self):
+        counter = 0
+        if self.attacker:
+            for card in self.computer_deck:
+                if card.beaten:
+                    counter+1
+        else:
+            for card in self.player_deck:
+                if card.beaten:
+                    counter+1
+        
+        if counter == 4:
+            if self.attacker:
+                self.player_goal+1
+            else:
+                self.computer_goal+1
+            self._move_change
     
     def _move_change(self):
         # Player move end
@@ -244,19 +279,172 @@ class Game_Logic():
         #TODO
         # self.attacker = not self.attacker
         self.get_attack_card()
-
+    
+    def _print_draw_situation(self):
+        result = ""
+        for i in range(0, len(self.draw), 2):
+            pair = f"{i//2 + 1}. "
+            pair += f"{self.draw[i].card_suite[0]}{self.draw[i].card_rank}"
+            if i + 1 < len(self.draw):
+                pair += f", {self.draw[i+1].card_suite[0]}{self.draw[i+1].card_rank}"
+            result += pair + " "
+        print(result.strip())
+        
+    def temp_state_game(self):
+        print()
+        print("Cards left: " + str(len(self.computer_deck)))
+        
+        if len(self.computer_active_cards) > 0:
+            print("    " + str(self.computer_active_cards[0].card_suite[0]) + self.computer_active_cards[0].card_rank + 
+                  ("__" if self.computer_active_cards[0].beaten else ""))
+        else:
+            print("    No goalkeeper")
+        
+        defender_line = "    "
+        if len(self.computer_active_cards) > 1:
+            defender_line += str(self.computer_active_cards[1].card_suite[0]) + self.computer_active_cards[1].card_rank + \
+                           ("__" if self.computer_active_cards[1].beaten else "")
+        if len(self.computer_active_cards) > 2:
+            defender_line += "  " + str(self.computer_active_cards[2].card_suite[0]) + self.computer_active_cards[2].card_rank + \
+                           ("__" if self.computer_active_cards[2].beaten else "")
+        if len(self.computer_active_cards) > 3:
+            defender_line += "  " + str(self.computer_active_cards[3].card_suite[0]) + self.computer_active_cards[3].card_rank + \
+                           ("__" if self.computer_active_cards[3].beaten else "")
+        print(defender_line)
+        
+        print()
+        print("Atk:    " + str(self.attack_card.card_suite[0]) + self.attack_card.card_rank)
+        self._print_draw_situation()
+        print()
+        
+        player_defender_line = "    "
+        if len(self.player_active_cards) > 1:
+            player_defender_line += str(self.player_active_cards[1].card_suite[0]) + self.player_active_cards[1].card_rank
+        if len(self.player_active_cards) > 2:
+            player_defender_line += "  " + str(self.player_active_cards[2].card_suite[0]) + self.player_active_cards[2].card_rank
+        if len(self.player_active_cards) > 3:
+            player_defender_line += "  " + str(self.player_active_cards[3].card_suite[0]) + self.player_active_cards[3].card_rank
+        print(player_defender_line)
+        
+        if len(self.player_active_cards) > 0:
+            print("    " + str(self.player_active_cards[0].card_suite[0]) + self.player_active_cards[0].card_rank)
+        else:
+            print("    No goalkeeper")
+        
+        print("Cards left: " + str(len(self.player_deck)))
+        print("Defender: 1-3")
+        print("Goalkeeper: 0 (Only after beating all defenders)")
+        print(str(self.player_goal) + " : " + str(self.computer_goal))
+    
+    def temp_state_game_draw(self):
+        print()
+        print("Cards left: " + str(len(self.computer_deck)))
+        
+        if len(self.computer_active_cards) > 0:
+            print("    " + str(self.computer_active_cards[0].card_suite[0]) + self.computer_active_cards[0].card_rank + 
+                  ("__" if self.computer_active_cards[0].beaten else ""))
+        else:
+            print("    No goalkeeper")
+        
+        defender_line = "    "
+        if len(self.computer_active_cards) > 1:
+            defender_line += str(self.computer_active_cards[1].card_suite[0]) + self.computer_active_cards[1].card_rank + \
+                           ("__" if self.computer_active_cards[1].beaten else "")
+        if len(self.computer_active_cards) > 2:
+            defender_line += "  " + str(self.computer_active_cards[2].card_suite[0]) + self.computer_active_cards[2].card_rank + \
+                           ("__" if self.computer_active_cards[2].beaten else "")
+        if len(self.computer_active_cards) > 3:
+            defender_line += "  " + str(self.computer_active_cards[3].card_suite[0]) + self.computer_active_cards[3].card_rank + \
+                           ("__" if self.computer_active_cards[3].beaten else "")
+        print(defender_line)
+        
+        print()
+        print("Draw:    " + self._print_draw_situation())
+        print()
+        
+        player_defender_line = "    "
+        if len(self.player_active_cards) > 1:
+            player_defender_line += str(self.player_active_cards[1].card_suite[0]) + self.player_active_cards[1].card_rank
+        if len(self.player_active_cards) > 2:
+            player_defender_line += "  " + str(self.player_active_cards[2].card_suite[0]) + self.player_active_cards[2].card_rank
+        if len(self.player_active_cards) > 3:
+            player_defender_line += "  " + str(self.player_active_cards[3].card_suite[0]) + self.player_active_cards[3].card_rank
+        print(player_defender_line)
+        
+        if len(self.player_active_cards) > 0:
+            print("    " + str(self.player_active_cards[0].card_suite[0]) + self.player_active_cards[0].card_rank)
+        else:
+            print("    No goalkeeper")
+        
+        print("Cards left: " + str(len(self.player_deck)))
+        print("Defender: 1-3")
+        print("Goalkeeper: 0 (Only after beating all defenders)")
+    
+    def handle_defender_attack(self, defender_index):
+        if len(self.computer_active_cards) > defender_index:
+            result = self.proper_attack(self.computer_active_cards[defender_index])
+            if result == True:
+                self.computer_active_cards[defender_index].beaten = True
+            elif result == "draw":
+                self.temp_state_game_draw()
+        else:
+            if defender_index == 0:
+                print("No goalkeeper")
+            else:
+                print(f"No defender at position {defender_index}")
+        self.temp_state_game()
+    
+    def _draw_situation(self, attacked_card):
+        draw = True
+        winner = ""
+        self.draw.append(self.attack_card)
+        self.draw.append(attacked_card)
+        while draw:
+            self.get_attack_card()
+            self.draw.append(self.attack_card)
             
+            if self.attacker:
+                if self.computer_deck:
+                    self.draw.append(self.computer_deck.pop(0))
+                else:
+                    print("Computer deck is empty!")
+                    winner = "P"
+                    break
+            else:
+                if self.player_deck:
+                    self.draw.append(self.player_deck.pop(0))
+                else:
+                    print("Player deck is empty!")
+                    winner = "C"
+                    break
+            
+            attacker = CARDS_ORDER.index(str(self.draw[-2].card_rank))
+            defender = CARDS_ORDER.index(str(self.draw[-1].card_rank))
+            
+            if attacker > defender:
+                if self.attacker:
+                    winner = "P"
+                else:
+                    winner = "C"
+                draw = False
+            elif attacker < defender:
+                if not self.attacker:
+                    winner = "P"
+                else:
+                    winner = "C"
+                draw = False
+        if winner == "P":
+            self.player_deck.extend(self.draw)
+        elif winner == "C":
+            self.computer_deck.extend(self.draw)
         
-    
+        print([f"{c.card_suite[0]}{c.card_rank}" for c in self.draw])
+        self.draw.clear()    
         
-       
-        
+        self._print_draw_situation()
+        print(f"Draw winner: {winner}")
 
         
-
-    
-
-    
 
 
 def start_game_test():
@@ -264,50 +452,7 @@ def start_game_test():
     game = Game_Logic(deck)
     os.system("clear")
 
-    def temp_state_game():
-        print()
-        print("Cards left: " + str(len(game.computer_deck)))
-        
-        if len(game.computer_active_cards) > 0:
-            print("    " + str(game.computer_active_cards[0].card_suite[0]) + game.computer_active_cards[0].card_rank + 
-                  ("__" if game.computer_active_cards[0].beaten else ""))
-        else:
-            print("    No goalkeeper")
-        
-        defender_line = "    "
-        if len(game.computer_active_cards) > 1:
-            defender_line += str(game.computer_active_cards[1].card_suite[0]) + game.computer_active_cards[1].card_rank + \
-                           ("__" if game.computer_active_cards[1].beaten else "")
-        if len(game.computer_active_cards) > 2:
-            defender_line += "  " + str(game.computer_active_cards[2].card_suite[0]) + game.computer_active_cards[2].card_rank + \
-                           ("__" if game.computer_active_cards[2].beaten else "")
-        if len(game.computer_active_cards) > 3:
-            defender_line += "  " + str(game.computer_active_cards[3].card_suite[0]) + game.computer_active_cards[3].card_rank + \
-                           ("__" if game.computer_active_cards[3].beaten else "")
-        print(defender_line)
-        
-        print()
-        print("Atk:    " + str(game.attack_card.card_suite[0]) + game.attack_card.card_rank)
-        print()
-        
-        player_defender_line = "    "
-        if len(game.player_active_cards) > 1:
-            player_defender_line += str(game.player_active_cards[1].card_suite[0]) + game.player_active_cards[1].card_rank
-        if len(game.player_active_cards) > 2:
-            player_defender_line += "  " + str(game.player_active_cards[2].card_suite[0]) + game.player_active_cards[2].card_rank
-        if len(game.player_active_cards) > 3:
-            player_defender_line += "  " + str(game.player_active_cards[3].card_suite[0]) + game.player_active_cards[3].card_rank
-        print(player_defender_line)
-        
-        if len(game.player_active_cards) > 0:
-            print("    " + str(game.player_active_cards[0].card_suite[0]) + game.player_active_cards[0].card_rank)
-        else:
-            print("    No goalkeeper")
-        
-        print("Cards left: " + str(len(game.player_deck)))
-        print("Attack:")
-        print("Defender: 1-3")
-        print("Goalkeeper: 0 (Only after beating all defenders)")
+    
     
     while True:
         user_input = input()
@@ -349,38 +494,18 @@ def start_game_test():
             game.player_draw()
             game.computer_draw()
             game.get_attack_card()
-            temp_state_game()
+            game.temp_state_game()
             while True:
                 user_input = input()
                 match user_input:
                     case "1":
-                        if len(game.computer_active_cards) > 1:
-                            if (game.proper_attack(game.computer_active_cards[1])):
-                                game.computer_active_cards[1].beaten = True
-                        else:
-                            print("No defender at position 1")
-                        temp_state_game()
+                        game.handle_defender_attack(1)
                     case "2":
-                        if len(game.computer_active_cards) > 2:
-                            if (game.proper_attack(game.computer_active_cards[2])):
-                                game.computer_active_cards[2].beaten = True
-                        else:
-                            print("No defender at position 2")
-                        temp_state_game()
+                        game.handle_defender_attack(2)
                     case "3":
-                        if len(game.computer_active_cards) > 3:
-                            if (game.proper_attack(game.computer_active_cards[3])):
-                                game.computer_active_cards[3].beaten = True
-                        else:
-                            print("No defender at position 3")
-                        temp_state_game()
+                       game.handle_defender_attack(3)
                     case "0":
-                        if len(game.computer_active_cards) > 0:
-                            if (game.proper_attack(game.computer_active_cards[0])):
-                                game.computer_active_cards[0].beaten = True
-                        else:
-                            print("No goalkeeper")
-                        temp_state_game()
+                        game.handle_defender_attack(0)
                     case _:
                         break
 
@@ -390,6 +515,9 @@ def start_game_test():
 
                     
         
+
+
+
 
 
 if __name__ == "__main__":
