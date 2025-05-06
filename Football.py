@@ -95,6 +95,8 @@ class Game_Logic():
         self.draw = []
         self.player_goal = 0
         self.computer_goal = 0
+
+        self.game_state = "Started"
         
         # PLayer - true, Computer - false
         self.attacker = True
@@ -246,22 +248,39 @@ class Game_Logic():
             print("Player wins!")
     
     def _goal_condition(self):
-        counter = 0
-        if self.attacker:
-            for card in self.computer_deck:
-                if card.beaten:
-                    counter+1
-        else:
-            for card in self.player_deck:
-                if card.beaten:
-                    counter+1
+        all_beaten = True
         
-        if counter == 4:
-            if self.attacker:
-                self.player_goal+1
-            else:
-                self.computer_goal+1
-            self._move_change
+        if self.attacker:
+            for card in self.computer_active_cards:
+                if not card.beaten:
+                    all_beaten = False
+                    break
+                
+            if all_beaten and len(self.computer_active_cards) > 0:
+                for card in self.computer_active_cards:
+                    self.player_deck.append(card)
+                
+                self.player_goal += 1
+                print(f"GOAL! Player scores! Score: {self.player_goal} - {self.computer_goal}")
+                self.computer_active_cards = []
+            
+        else:
+            for card in self.player_active_cards:
+                if not card.beaten:
+                    all_beaten = False
+                    break
+                
+            if all_beaten and len(self.player_active_cards) > 0:
+                for card in self.player_active_cards:
+                    self.computer_deck.append(card)
+                
+                self.computer_goal += 1
+                print(f"GOAL! Computer scores! Score: {self.player_goal} - {self.computer_goal}")
+                self.player_active_cards = []
+        
+        if all_beaten:
+            self.attacked_cards.clear()
+            self._move_change()
     
     def _move_change(self):
         # Player move end
@@ -288,7 +307,7 @@ class Game_Logic():
             if i + 1 < len(self.draw):
                 pair += f", {self.draw[i+1].card_suite[0]}{self.draw[i+1].card_rank}"
             result += pair + " "
-        print(result.strip())
+        return result.strip()
         
     def temp_state_game(self):
         print()
@@ -387,11 +406,14 @@ class Game_Logic():
                 self.computer_active_cards[defender_index].beaten = True
             elif result == "draw":
                 self.temp_state_game_draw()
+                
         else:
             if defender_index == 0:
                 print("No goalkeeper")
             else:
                 print(f"No defender at position {defender_index}")
+        self._goal_condition()
+        self._debug_card_count()
         self.temp_state_game()
     
     def _draw_situation(self, attacked_card):
@@ -434,18 +456,35 @@ class Game_Logic():
                     winner = "C"
                 draw = False
         if winner == "P":
+            for draw_card in self.draw:
+                if draw_card in self.player_active_cards or draw_card in self.computer_active_cards:
+                    draw_card.beaten = True
             self.player_deck.extend(self.draw)
         elif winner == "C":
+            for draw_card in self.draw:
+                if draw_card in self.player_active_cards or draw_card in self.computer_active_cards:
+                    draw_card.beaten = True
             self.computer_deck.extend(self.draw)
         
-        print([f"{c.card_suite[0]}{c.card_rank}" for c in self.draw])
-        self.draw.clear()    
-        
-        self._print_draw_situation()
+        if winner == "P" and not self.attacker:
+            self._move_change()
+            return
+        elif winner == "C" and self.attacker:
+            self._move_change()
+            return
+        self._print_draw_situation()  
         print(f"Draw winner: {winner}")
+        self.draw.clear()
+        self.get_attack_card()
 
-        
-
+    # Debug method. Hard to count every time 
+    def _debug_card_count(self):
+        total = (len(self.computer_deck) + len(self.computer_active_cards) + 
+                 len(self.player_deck) + len(self.player_active_cards) + 
+                 (1 if self.attack_card.id != -1 else 0) +
+                 len(self.draw)
+                 )
+        print(f"DEBUG: Total cards: {total}")
 
 def start_game_test():
     deck = Main_Card_Deck()
@@ -522,3 +561,8 @@ def start_game_test():
 
 if __name__ == "__main__":
     start_game_test()
+
+
+-1 -1
++4 +0
+-1 -1
