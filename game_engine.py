@@ -29,10 +29,9 @@ class GameEngine():
         self.attacker.deck.extend(self.battle_cards)
         self.battle_cards = []
         
-        for card in self.defender.active_cards:
-            if card.card_state == CardState.BEATEN:
-                self.defender.active_cards.remove(card)
         
+        self.defender.active_cards = [card for card in self.defender.active_cards 
+                                      if card.card_state != CardState.BEATEN]
         
         self.attacker, self.defender = self.defender, self.attacker
         # I have changed the process of move change and how cards are moved between players deck and other storages
@@ -79,7 +78,7 @@ class GameEngine():
             #TODO Draw situation is not completed
             return "Draw"
         else:
-            #TODO
+            self.defender.deck.append(copy.copy(self.attack_card))
             return "Fail"
     
     def valid_for_next_attack(self):
@@ -87,6 +86,8 @@ class GameEngine():
             return False
         if all(card.card_state == CardState.BEATEN for card in self.defender.active_cards):
             return False
+        
+        self.attack_card = self.attacker.deck.pop(0)
         return True
 
     def _check_goal_condition(self):
@@ -144,6 +145,10 @@ class GameEngine():
                     return i  # draw option
 
         return best_index
+    
+    # Used incase there is no way to attack or you want to skip move
+    def attack_end(self):
+        self.defender.deck.append(copy.copy(self.attack_card))
 
 
     

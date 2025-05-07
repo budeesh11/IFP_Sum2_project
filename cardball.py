@@ -39,14 +39,18 @@ if __name__ == "__main__":
                 target_index = game_engine.computer_attack()
             else:
                 target_index = input("Defender (1-3) and goalkeeper (0): ")
-            
-            result = game_engine.attack_handle(int(target_index))
-            print("Result: " + str(result))
-            
-            time.sleep(1)
-            
-            if result == "Fail" or not game_engine.valid_for_next_attack():
-                break
+                if target_index == "":
+                    game_engine.attack_end()
+                    break
+                    
+            if target_index in ["1", "2", "3", "0"]:
+                result = game_engine.attack_handle(int(target_index))
+                print("Result: " + str(result))
+                
+                time.sleep(1)
+                
+                if result == "Fail" or not game_engine.valid_for_next_attack():
+                    break
             
             
         
