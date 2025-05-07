@@ -37,13 +37,20 @@ if __name__ == "__main__":
             
             if game_engine.attacker.name == "Computer":
                 target_index = game_engine.computer_attack()
+                if target_index == "":
+                    game_engine.attack_end()
+                    break
             else:
                 target_index = input("Defender (1-3) and goalkeeper (0): ")
                 if target_index == "":
                     game_engine.attack_end()
                     break
                     
-            if target_index in ["1", "2", "3", "0"]:
+            if target_index == "":
+                game_engine.attack_end()
+                break
+            
+            if target_index in ["1", "2", "3", "0", 1, 2, 3, 4]:
                 result = game_engine.attack_handle(int(target_index))
                 print("Result: " + str(result))
                 

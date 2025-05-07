@@ -29,7 +29,7 @@ class GameEngine():
         self.attacker.deck.extend(self.battle_cards)
         self.battle_cards = []
         
-        
+
         self.defender.active_cards = [card for card in self.defender.active_cards 
                                       if card.card_state != CardState.BEATEN]
         
@@ -142,9 +142,9 @@ class GameEngine():
                 if i == 0 and any(j < len(self.defender.active_cards) and not self.defender.active_cards[j].card_state == CardState.BEATEN for j in [1, 2, 3]):
                     continue
                 if self.CARD_RANKS.index(defender_card.rank) == attacker_strength:
-                    return i  # draw option
+                    return i
 
-        return best_index
+        return "" if best_index == None else best_index
     
     # Used incase there is no way to attack or you want to skip move
     def attack_end(self):
