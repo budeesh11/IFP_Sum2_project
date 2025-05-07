@@ -32,14 +32,43 @@ class GameCLI:
     def display_draw_situation(self):
         player = self.engine.attacker if self.engine.attacker.name == "Player" else self.engine.defender
         computer = self.engine.defender if self.engine.attacker.name == "Player" else self.engine.attacker
-        draw_series_length = len(self.engine.draw_pile)
+        draw_series_length = len(self.engine.draw_pile) // 2
+        print("===========================================")
+        print(f"{self.engine.attacker.name}'s Turn. Goals: {player.goals}:{computer.goals}")
+        print("DRAW")
         for i in range(draw_series_length):
-            print("===========================================")
-            print(f"{self.engine.attacker.name}'s Turn. Goals: {player.goals}:{computer.goals}")
-            print("DRAW")
-            print("Attacker: ", self.engine.draw_pile[i].display())
+            print("  Attacker:", self.engine.draw_pile[i*2].display())
+            print("  Defender:", self.engine.draw_pile[i*2+1].display())
             print()
-            print("Defender: ", self.engine.draw_pile[i+1].display())
+        print("===========================================")
+        time.sleep(1)
+    
+    def display_winning(self):
+        player = self.engine.attacker if self.engine.attacker.name == "Player" else self.engine.defender
+        computer = self.engine.defender if self.engine.attacker.name == "Player" else self.engine.attacker
+        if self.engine.attacker.goals == 3:
             print("===========================================")
+            print(self.engine.attacker.name + " wins!")
+            print(f"Goals: {player.goals}:{computer.goals}")
+            print("===========================================")
+        elif self.engine.defender.goals == 3:
+            print("===========================================")
+            print(self.engine.defender.name + " wins!")
+            print(f"Goals: {player.goals}:{computer.goals}")
+            print("===========================================")
+        elif len(self.engine.attacker.deck) == 0 and len(self.engine.attacker.active_cards) == 0:
+            print("===========================================")
+            print(self.engine.defender.name + " wins by default!")
+            print(f"{self.engine.attacker.name} ran out of cards.")
+            print(f"Goals: {player.goals}:{computer.goals}")
+            print("===========================================")
+        elif len(self.engine.defender.deck) == 0 and len(self.engine.defender.active_cards) == 0:
+            print("===========================================")
+            print(self.engine.attacker.name + " wins by default!")
+            print(f"{self.engine.defender.name} ran out of cards.")
+            print(f"Goals: {player.goals}:{computer.goals}")
+            print("===========================================")
+        
+        
+        
             
- 

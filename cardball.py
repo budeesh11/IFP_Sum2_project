@@ -27,8 +27,12 @@ if __name__ == "__main__":
     # TODO: temp ui because it will be changed to pygame later
     game_interface = GameCLI(game_engine)
     
-    while True:
-        game_engine.change_turn()
+    while game_engine.game_running:
+        game_state = game_engine.change_turn()
+        if game_state == False:
+            game_interface.display_winning()
+            break
+        
         while True:
         
             # os.system("clear")

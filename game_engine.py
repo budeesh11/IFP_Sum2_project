@@ -21,6 +21,8 @@ class GameEngine():
         self.attack_card = None
         self.battle_cards = []
         self.draw_pile = []
+        
+        self.game_running = True
     
     # This method should be completed and if changed can be still used like this
     def change_turn(self):
@@ -35,6 +37,10 @@ class GameEngine():
 
         self.defender.active_cards = [card for card in self.defender.active_cards 
                                       if card.card_state != CardState.BEATEN]
+        
+        if self._check_win_condition():
+            self.game_running = False
+            return False
         
         self.attacker, self.defender = self.defender, self.attacker
         # I have changed the process of move change and how cards are moved between players deck and other storages
@@ -178,7 +184,7 @@ class GameEngine():
     
     def _draw_handle(self, defender_card: Card):
         self.draw_pile = []
-        self.draw_pile = [self.attack_card, defender_card]
+        self.draw_pile = [self.attack_card, copy.copy(defender_card)]
         
         if defender_card in self.defender.active_cards:
             defender_card.card_state = CardState.BEATEN
@@ -213,6 +219,11 @@ class GameEngine():
                 self.battle_cards.extend(self.draw_pile)
                 self.last_draw_winner = self.defender.name
                 break
+    
+    def _check_win_condition(self):
+        if self.attacker.goals == 3 or self.defender.goals == 3 or len(self.attacker.deck) == 0 or len(self.defender.deck) == 0:
+            self.game_running == False
+            return True
 
         
     
