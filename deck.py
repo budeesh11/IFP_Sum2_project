@@ -19,3 +19,8 @@ class Deck:
     
     def is_empty(self):
         return not self.cards
+    
+    def draw(self, cards_number):
+        cards_return = self.cards[:cards_number]
+        self.cards = self.cards[cards_number:]
+        return cards_return

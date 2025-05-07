@@ -14,7 +14,7 @@ class gameEngine():
         self.CARD_RANKS = CARD_RANKS
         
         self.attack_card = None
-        self.draw_cards_storage = []
+        self.battle_cards = []
     
     # This method should be completed and if changed can be still used like this
     def change_turn(self):
@@ -53,10 +53,17 @@ class gameEngine():
             return "Success"
         elif attacker_value == defender_value:
             #TODO Draw situation is not completed
-            self.draw_cards_storage.extend([attacker_card, defender_card])
             return "Draw"
         else:
-            self.attacker.deck.append(att)
+            #TODO
+            return "Fail"
+    
+    def _valid_for_next_attack(self):
+        if not self.attacker.deck:
+            return False
+        if all(card.card_state == CardState.BEATEN for card in self.defender.active_cards):
+            return False
+        return True
         
         
                 
