@@ -10,3 +10,9 @@ class Player:
         self.active_cards.extend(self.deck[:to_draw])
         self.deck = self.deck[to_draw:]
     
+    def display_active_cards(self):
+        result = ""
+        for card in self.active_cards:
+            result += card.display() +" "
+        return result
+    

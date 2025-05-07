@@ -3,7 +3,7 @@ from player import Player
 from card_state import CardState
 from card import Card
 
-class gameEngine():
+class GameEngine():
     def __init__(self, player: Player, computer: Player, CARD_SUITS: list, CARD_RANKS: list):
         self.player = player
         self.computer = computer
@@ -20,16 +20,15 @@ class gameEngine():
     def change_turn(self):
         self.attacker, self.defender = self.defender, self.attacker
         # I have changed the process of move change and how cards are moved between players deck and other storages
-        self.attack_card = None
+        if self.attack_card == None:
+            if len(self.attacker.deck) == 0:
+                return "DEBUG: No cards left in deck of " + self.attacker
+            self.attack_card = self.attacker.deck.pop(0)
         self.attacker.draw_active_cards()
         self.defender.draw_active_cards()
     
     # index is the index of target card in active cards of opponent
     def attack_handle(self, target_card_index):
-        if self.attack_card == None:
-            if self.attacker.deck.is_empty():
-                return "DEBUG: No cards left in deck of " + self.attacker
-            self.attack_card = self.attacker.deck.pop(0)
         
         # Protection for possible invalid target choice. Helpful even when I will lock most of dangerous inputs
         try:

@@ -1,10 +1,16 @@
-from game_engine import gameEngine
+from game_engine import GameEngine
 
-class gameCLI:
-    def __init__(self, engine: gameEngine):
+class GameCLI:
+    def __init__(self, engine: GameEngine):
         self.engine = engine
         
-    def print_game_state(self):
-        print(f"{self.engine.attacker.name}'s Turn. Goals: {self.engine.attacker.goals}")
-        print("Attack Card:", self.engine.attack_card)
-        print("Defender Active Cards:", self.engine.defender.active_cards)
+    def display_game_state(self):
+        player = self.engine.attacker if self.engine.attacker.name == "Player" else self.engine.defender
+        computer = self.engine.defender if self.engine.attacker.name == "Player" else self.engine.attacker
+        
+        print(f"{self.engine.attacker.name}'s Turn. Goals: {player.goals}:{computer.goals}")
+        print()
+        print("Computer Active Cards:", computer.display_active_cards())
+        print("Attack Card:", self.engine.attack_card.display() if self.engine.attack_card else "None")
+        print("Player Active Cards:", player.display_active_cards())
+        print()
