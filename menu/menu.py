@@ -5,9 +5,10 @@ class menu():
     def __init__(self, game):
         self.game = game #gives access to the game class
         self.mid_w, self.mid_h = self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2
+        self.surface = pygame.Surface((self.game.DISPLAY_W, self.game.DISPLAY_H), pygame.SRCALPHA)
         self.run_display = True #runs the display
-        self.cursor_rect = pygame.Rect(0, 0, 400, 50)  # Made wider and taller for highlighting
-        self.offset = -200  # Adjusted offset for the highlight box
+        self.cursor_rect = pygame.Rect(0, 0, 400, 50)  
+        self.offset = -200
         self.selected_color = self.game.RED  # Color for selected option
         self.unselected_color = (50, 50, 50)  # Dark gray for unselected options
 
@@ -228,7 +229,7 @@ class InstructionsMenu(menu): #instructions menu
     def __init__(self, game):
         menu.__init__(self, game)
 
-    def display_menu(self):
+    def display_menu(self): 
         self.run_display = True
         while self.run_display:
             self.game.check_events()
