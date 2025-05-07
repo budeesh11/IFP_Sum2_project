@@ -1,7 +1,5 @@
-
-
 class Player:
-    def __init__(self, name, deck):
+    def __init__(self, name, deck: list):
         self.name = name
         self.deck = deck
         self.active_cards = []
