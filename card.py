@@ -10,7 +10,9 @@ class Card:
         self.deck_side = CardState.DECK
     
     def display(self):
-        return str(self.suit[0] + self.rank[0])
+        if self.card_state == CardState.BEATEN:
+            return "_" + str(self.suit[0] + self.rank) + "_"
+        return str(self.suit[0] + self.rank)
 
     def display_with_id(self):
-        return str(self.id) + ". " + self.suit[0] + self.rank[0]
+        return str(self.id) + ". " + self.suit[0] + self.rank

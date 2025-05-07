@@ -6,6 +6,7 @@ from game_engine import GameEngine
 from game_cli import GameCLI
 
 import os
+import time
 
 CARD_SUITS = ["Clubs", "Diamonds", "Spades", "Hearts"]
 CARD_RANKS = ["6", "7", "8", "9", "10", "J", "Q", "K", "A"]
@@ -26,12 +27,28 @@ if __name__ == "__main__":
     # TODO: temp ui because it will be changed to pygame later
     game_interface = GameCLI(game_engine)
     
-    os.system("clear")
     while True:
         game_engine.change_turn()
+        while True:
         
-        game_interface.display_game_state()
+            # os.system("clear")
+            game_interface.display_game_state()
 
-        move = input("Defender (1-3) and goalkeeper (0)")
+            
+            if game_engine.attacker.name == "Computer":
+                target_index = game_engine.attacker.computer_attack()
+            else:
+                target_index = input("Defender (1-3) and goalkeeper (0): ")
+            
+            result = game_engine.attack_handle(int(target_index))
+            print("Result: " + str(result))
+            
+            time.sleep(1)
+            
+            if result == "Fail" or not game_engine.valid_for_next_attack():
+                break
+            
+            
+        
 
 
