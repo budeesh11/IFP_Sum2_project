@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 game_engine.attack_end()
                 break
             
-            if target_index in ["1", "2", "3", "0", 1, 2, 3, 4]:
+            if target_index in ["1", "2", "3", "0", 1, 2, 3, 0]:
                 result = game_engine.attack_handle(int(target_index))
                 print("Result: " + str(result))
                 

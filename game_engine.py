@@ -36,7 +36,7 @@ class GameEngine():
         self.attacker, self.defender = self.defender, self.attacker
         # I have changed the process of move change and how cards are moved between players deck and other storages
         if len(self.attacker.deck) == 0:
-            return "DEBUG: No cards left in deck of " + self.attacker
+            return "DEBUG: No cards left in deck of " + self.attacker.name
         self.attack_card = self.attacker.deck.pop(0)
             
         self.attacker.draw_active_cards()
@@ -49,7 +49,7 @@ class GameEngine():
         try:
             target = self.defender.active_cards[target_card_index]
         except:
-            return "DEBUG: Invalid target on index - " + target_card_index + ". Attack card: " + self.attack_card.display()
+            return "DEBUG: Invalid target on index - " + str(target_card_index) + ". Attack card: " + self.attack_card.display()
         
         if target.card_state == CardState.BEATEN:
             return "Card is already beaten! Choose another target."
@@ -113,14 +113,33 @@ class GameEngine():
         best_index = None
         best_defender_strength = -1
 
+        # First priority: Check if the computer has a 6 and can attack an Ace
+        if attacker_strength == 0: 
+            for i, defender_card in enumerate(self.defender.active_cards):
+                if defender_card.card_state == CardState.BEATEN:
+                    continue
+                    
+                if i == 0 and any(
+                    j < len(self.defender.active_cards) and
+                    self.defender.active_cards[j].card_state != CardState.BEATEN
+                    for j in [1, 2, 3]
+                ):
+                    continue
+                    
+                defender_strength = self.CARD_RANKS.index(defender_card.rank)
+                if defender_strength == 8:  #
+                    return i 
+
         for i, defender_card in enumerate(self.defender.active_cards):
             if defender_card.card_state == CardState.BEATEN:
                 continue
 
-            if i == 0:
-                # check if computer can attack goalkeeper
-                if any(j < len(self.defender.active_cards) and not self.defender.active_cards[j].card_state == CardState.BEATEN for j in [1, 2, 3]):
-                    continue
+            if i == 0 and any(
+                j < len(self.defender.active_cards) and
+                self.defender.active_cards[j].card_state != CardState.BEATEN
+                for j in [1, 2, 3]
+            ):
+                continue
 
             defender_strength = self.CARD_RANKS.index(defender_card.rank)
 
@@ -139,12 +158,16 @@ class GameEngine():
             for i, defender_card in enumerate(self.defender.active_cards):
                 if defender_card.card_state == CardState.BEATEN:
                     continue
-                if i == 0 and any(j < len(self.defender.active_cards) and not self.defender.active_cards[j].card_state == CardState.BEATEN for j in [1, 2, 3]):
+                if i == 0 and any(
+                    j < len(self.defender.active_cards) and
+                    self.defender.active_cards[j].card_state != CardState.BEATEN
+                    for j in [1, 2, 3]
+                ):
                     continue
                 if self.CARD_RANKS.index(defender_card.rank) == attacker_strength:
                     return i
 
-        return "" if best_index == None else best_index
+        return "" if best_index is None else best_index
     
     # Used incase there is no way to attack or you want to skip move
     def attack_end(self):
