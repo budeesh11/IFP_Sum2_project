@@ -16,3 +16,6 @@ class Deck:
     
     def __len__(self):
         return len(self.cards)
+    
+    def is_empty(self):
+        return not self.cards

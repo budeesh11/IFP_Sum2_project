@@ -10,4 +10,6 @@ if __name__ == "__main__":
     deck = Deck(CARD_SUITS, CARD_RANKS)
     print(deck)
     print(len(deck))
+    print(deck.is_empty())
+
 
