@@ -1,4 +1,5 @@
 from game_engine import GameEngine
+import time
 
 class GameCLI:
     def __init__(self, engine: GameEngine):
@@ -27,3 +28,18 @@ class GameCLI:
         for card in self.engine.battle_cards:
             result += card.display() + " "
         return result
+    
+    def display_draw_situation(self):
+        player = self.engine.attacker if self.engine.attacker.name == "Player" else self.engine.defender
+        computer = self.engine.defender if self.engine.attacker.name == "Player" else self.engine.attacker
+        draw_series_length = len(self.engine.draw_pile)
+        for i in range(draw_series_length):
+            print("===========================================")
+            print(f"{self.engine.attacker.name}'s Turn. Goals: {player.goals}:{computer.goals}")
+            print("DRAW")
+            print("Attacker: ", self.engine.draw_pile[i].display())
+            print()
+            print("Defender: ", self.engine.draw_pile[i+1].display())
+            print("===========================================")
+            
+ 

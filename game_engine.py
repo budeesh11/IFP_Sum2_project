@@ -13,11 +13,14 @@ class GameEngine():
         self.attacker = computer
         self.defender = player
         
+        self.last_draw_winner = None
+        
         self.CARD_SUITS = CARD_SUITS
         self.CARD_RANKS = CARD_RANKS
         
         self.attack_card = None
         self.battle_cards = []
+        self.draw_pile = []
     
     # This method should be completed and if changed can be still used like this
     def change_turn(self):
@@ -75,7 +78,7 @@ class GameEngine():
             self._check_goal_condition()
             return "Success"
         elif attacker_value == defender_value:
-            #TODO Draw situation is not completed
+            self._draw_handle(defender_card)
             return "Draw"
         else:
             self.defender.deck.append(copy.copy(self.attack_card))
@@ -172,9 +175,46 @@ class GameEngine():
     # Used incase there is no way to attack or you want to skip move
     def attack_end(self):
         self.defender.deck.append(copy.copy(self.attack_card))
-
-
     
+    def _draw_handle(self, defender_card: Card):
+        self.draw_pile = []
+        self.draw_pile = [self.attack_card, defender_card]
+        
+        if defender_card in self.defender.active_cards:
+            defender_card.card_state = CardState.BEATEN
+        
+        while True:
+            if not self.attacker.deck:
+                print(f"{self.defender.name} wins the draw (attacker out of cards)")
+                self.defender.deck.extend(self.draw_pile)
+                break
+            if not self.defender.deck:
+                print(f"{self.attacker.name} wins the draw (defender out of cards)")
+                self.attacker.deck.extend(self.draw_pile)
+                break
+            
+            
+            attacker_draw = self.attacker.deck.pop(0)
+            defender_draw = self.defender.deck.pop(0)
+            
+            self.draw_pile.append(attacker_draw)
+            self.draw_pile.append(defender_draw)
+            
+            attacker_value = self.CARD_RANKS.index(attacker_draw.rank)
+            defender_value = self.CARD_RANKS.index(defender_draw.rank)
+
+            if attacker_value > defender_value:
+                print("DEBUG: " + self.attacker.name + " wins draw!")
+                self.battle_cards.extend(self.draw_pile)
+                self.last_draw_winner = self.attacker.name
+                break
+            if defender_value > attacker_value:
+                print("DEBUG: " + self.attacker.name + " wins draw!")
+                self.battle_cards.extend(self.draw_pile)
+                self.last_draw_winner = self.defender.name
+                break
+
+        
     
         
                 

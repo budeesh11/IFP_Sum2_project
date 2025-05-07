@@ -53,6 +53,9 @@ if __name__ == "__main__":
             if target_index in ["1", "2", "3", "0", 1, 2, 3, 0]:
                 result = game_engine.attack_handle(int(target_index))
                 print("Result: " + str(result))
+
+                if result == "Draw":
+                    game_interface.display_draw_situation()
                 
                 time.sleep(1)
                 
