@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
             
             if game_engine.attacker.name == "Computer":
-                target_index = game_engine.attacker.computer_attack()
+                target_index = game_engine.computer_attack()
             else:
                 target_index = input("Defender (1-3) and goalkeeper (0): ")
             

@@ -4,6 +4,7 @@ from card_state import CardState
 from card import Card
 
 import copy
+import time
 
 class GameEngine():
     def __init__(self, player: Player, computer: Player, CARD_SUITS: list, CARD_RANKS: list):
@@ -101,6 +102,49 @@ class GameEngine():
         if cards_beaten:
             self.attacker.goals += 1
             print("Goal! " + self.attacker.name + " scored!")
+    
+    def computer_attack(self):
+        print("Computer thinks...")
+        time.sleep(1)
+        if not self.attack_card:
+            return None
+        attacker_strength = self.CARD_RANKS.index(self.attack_card.rank)
+        best_index = None
+        best_defender_strength = -1
+
+        for i, defender_card in enumerate(self.defender.active_cards):
+            if defender_card.card_state == CardState.BEATEN:
+                continue
+
+            if i == 0:
+                # check if computer can attack goalkeeper
+                if any(j < len(self.defender.active_cards) and not self.defender.active_cards[j].card_state == CardState.BEATEN for j in [1, 2, 3]):
+                    continue
+
+            defender_strength = self.CARD_RANKS.index(defender_card.rank)
+
+            # The goal of computer algorithm is to find and beat the highest possible card because when it will take it and after n amount of moves this card will show up
+            # There is a lot of place for creating algorithm here
+            # This the basic that I came with
+            # It is possible to improve it like creating memory so if it remembers what card it won earlier and how many cards left until it it can use it for attack
+            if attacker_strength > defender_strength:
+                if defender_strength > best_defender_strength:
+                    best_defender_strength = defender_strength
+                    best_index = i
+
+        # If no beatable cards, consider draw
+        # TODO: if somebody wants. Try to implement so it can compare how much profit it will get for draw and maybe go for it instead of just attacking
+        if best_index is None:
+            for i, defender_card in enumerate(self.defender.active_cards):
+                if defender_card.card_state == CardState.BEATEN:
+                    continue
+                if i == 0 and any(j < len(self.defender.active_cards) and not self.defender.active_cards[j].card_state == CardState.BEATEN for j in [1, 2, 3]):
+                    continue
+                if self.CARD_RANKS.index(defender_card.rank) == attacker_strength:
+                    return i  # draw option
+
+        return best_index
+
 
     
     

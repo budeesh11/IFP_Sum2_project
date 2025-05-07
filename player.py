@@ -15,7 +15,3 @@ class Player:
         for card in self.active_cards:
             result += str(self.active_cards.index(card)) + ". " + card.display() +" "
         return result
-    
-    def computer_attack(self):
-        return 1
-    
