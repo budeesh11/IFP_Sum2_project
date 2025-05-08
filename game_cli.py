@@ -56,13 +56,13 @@ class GameCLI:
             print(self.engine.defender.name + " wins!")
             print(f"Goals: {player.goals}:{computer.goals}")
             print("===========================================")
-        elif len(self.engine.attacker.deck) == 0 and len(self.engine.attacker.active_cards) == 0:
+        elif len(self.engine.attacker.deck) == 0:
             print("===========================================")
             print(self.engine.defender.name + " wins by default!")
             print(f"{self.engine.attacker.name} ran out of cards.")
             print(f"Goals: {player.goals}:{computer.goals}")
             print("===========================================")
-        elif len(self.engine.defender.deck) == 0 and len(self.engine.defender.active_cards) == 0:
+        elif len(self.engine.defender.deck) == 0:
             print("===========================================")
             print(self.engine.attacker.name + " wins by default!")
             print(f"{self.engine.defender.name} ran out of cards.")

@@ -28,10 +28,7 @@ if __name__ == "__main__":
     game_interface = GameCLI(game_engine)
     
     while game_engine.game_running:
-        game_state = game_engine.change_turn()
-        if game_state == False:
-            game_interface.display_winning()
-            break
+        game_engine.change_turn()
         
         while True:
         
@@ -60,11 +57,21 @@ if __name__ == "__main__":
 
                 if result == "Draw":
                     game_interface.display_draw_situation()
+                    if game_engine.last_draw_winner == game_engine.defender.name:
+                        break
                 
                 time.sleep(1)
                 
                 if result == "Fail" or not game_engine.valid_for_next_attack():
                     break
+
+        
+        game_engine._check_win_condition()
+        
+    if game_engine.game_running == False:
+        game_interface.display_winning()
+        
+
             
             
         
