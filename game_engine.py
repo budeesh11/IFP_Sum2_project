@@ -210,6 +210,7 @@ class GameEngine():
                 print("DEBUG: " + self.attacker.name + " wins draw!")
                 self.battle_cards.extend(self.draw_pile)
                 self.last_draw_winner = self.attacker.name
+                self._check_goal_condition()
                 break
             if defender_value > attacker_value:
                 print("DEBUG: " + self.defender.name + " wins draw!")
@@ -222,6 +223,108 @@ class GameEngine():
             self.game_running = False
             return True
         return False
+    
+    def _harder_computer_attack(self):
+        # Does same thing as original except it now simulates draws and gauges possible gains 
+        # Uncomment print statements to see how it works
+
+        print("Computer thinks...")
+        time.sleep(1)
+        if not self.attack_card:
+            return None
+        attacker_strength = self.CARD_RANKS.index(self.attack_card.rank)
+        best_index = None
+        attack_score = float("-inf")
+        self.position_bonus = {0:100} # Prefer GK over defenders
+        # TODO: If you want to try, you could create a Graph that leads to beating GK 
+        self.rank_bonus = {
+            'A': 50,
+            'K': 40,            # Prefer high rank cards over normal cards
+            'Q': 30,
+            'J': 20
+        }
+
+        for i, defender_card in enumerate(self.defender.active_cards):
+            if defender_card.card_state == CardState.BEATEN:
+                continue
+            if i == 0 and any(
+                j < len(self.defender.active_cards) and
+                self.defender.active_cards[j].card_state != CardState.BEATEN
+                for j in [1, 2, 3]
+            ):
+                continue
+            defender_strength = self.CARD_RANKS.index(defender_card.rank)
+            # print(f"[DEBUG] attacker_strength={attacker_strength}, defender_strength={defender_strength}")
+
+            # Win = 5, Draw = 3, Lose = -1
+            if (attacker_strength > defender_strength) or (attacker_strength == 0 and defender_strength == 8) :
+                base_score = 5
+
+            elif attacker_strength == defender_strength:
+                base_score = 3
+                simulation_score = self._simulate_draws(defender_card)
+                base_score = base_score + simulation_score
+                # print(f"DEBUG: simulation returned {simulation_score}") 
+                # print(f"DEBUG: simulation +  base is {base_score}")
+    
+            else:
+                base_score = -1
+            
+            # Only adds position and rank bonus on winning moves
+            if base_score > 0:
+                bonus_score = self.position_bonus.get(i, 0) \
+                            + self.rank_bonus.get(defender_card.rank, 0)
+            
+            else:
+                bonus_score = 0
+
+            total = base_score + bonus_score
+            # print(f"[DEBUG] SCORE: {total}")
+
+            if total > attack_score:
+                attack_score = total
+                best_index = i
+
+        if attack_score == -1: # If all moves lead to losing, skip turn
+            return ""
+        return best_index
+
+    def _simulate_draws(self, defender_card):
+        
+        # Copies so that the current cards are not altered
+        self.attacker_deck_sim = [copy.copy(card) for card in self.attacker.deck] 
+        self.defender_deck_sim = [copy.copy(card) for card in self.defender.deck]
+        self.draw_pile_sim = []
+        self.draw_pile_sim = [copy.copy(self.attack_card), copy.copy(defender_card)]
+
+        for i, card in enumerate(self.defender_deck_sim):
+            if card.rank == defender_card.rank and card.suit == defender_card.suit:
+                self.defender_deck_sim.pop(i)
+        
+            while True:
+                if not self.attacker_deck_sim:
+                    return len(self.draw_pile_sim)
+                    
+                if not self.defender_deck_sim:
+                    return -len(self.draw_pile_sim)            
+                
+                attacker_draw = self.attacker_deck_sim.pop(0)
+                defender_draw = self.defender_deck_sim.pop(0)
+                
+                self.draw_pile_sim.append(attacker_draw)
+                self.draw_pile_sim.append(defender_draw)
+                
+                attacker_value = self.CARD_RANKS.index(attacker_draw.rank)
+                defender_value = self.CARD_RANKS.index(defender_draw.rank)
+                #print(f"[DEBUG] Attacker draws {attacker_draw.display()} ({attacker_value}), Defender draws {defender_draw.display()} ({defender_value})")
+                #print(f"[DEBUG] Pile now:", [card.display() for card in self.draw_pile_sim])
+
+                if attacker_value > defender_value:
+                    return len(self.draw_pile_sim)
+                
+                if defender_value > attacker_value:
+                    return -len(self.draw_pile_sim)
+
 
         
     

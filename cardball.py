@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
             
             if game_engine.attacker.name == "Computer":
-                target_index = game_engine.computer_attack()
+                target_index = game_engine._harder_computer_attack()
                 if target_index == "":
                     game_engine.attack_end()
                     break
