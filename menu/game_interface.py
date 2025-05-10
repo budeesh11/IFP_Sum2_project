@@ -69,6 +69,10 @@ class GameInterface:
         # Initialize game engine
         self.engine = GameEngine(self.player, self.computer, self.CARD_SUITS, self.CARD_RANKS)
         
+        # Make player the attacker (start first)
+        self.engine.attacker = self.player
+        self.engine.defender = self.computer
+        
         # Draw initial active cards
         self.player.draw_active_cards()
         self.computer.draw_active_cards()
@@ -287,15 +291,126 @@ class GameInterface:
         self.message = message
         self.message_timer = duration
     
+    def show_card_battle_result(self, attacker_card, defender_card, result):
+        """Show a visual comparison of the attacking and defending cards with the result"""
+        # Store the current state to restore later
+        original_message = self.message
+        original_timer = self.message_timer
+        
+        # Center position for displaying cards
+        center_x = self.DISPLAY_W // 2
+        center_y = self.DISPLAY_H // 2
+        card_spacing = 80  # Space between the two cards
+        
+        # Draw the background and game state
+        self.display.blit(self.game.field_image, (0, 0))
+        
+        # Add semi-transparent overlay for better visibility
+        overlay = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 150))  # Dark semi-transparent overlay
+        self.display.blit(overlay, (0, 0))
+        
+        # Draw the cards side by side
+        left_card_x = center_x - self.card_width - card_spacing // 2
+        right_card_x = center_x + card_spacing // 2
+        
+        # Draw attacker's card
+        self.draw_card(attacker_card, left_card_x, center_y - self.card_height // 2)
+        
+        # Draw defender's card
+        self.draw_card(defender_card, right_card_x, center_y - self.card_height // 2)
+        
+        # Draw labels for the cards
+        font = pygame.font.Font(None, 24)
+        attacker_name = self.engine.attacker.name
+        defender_name = self.engine.defender.name
+        
+        attacker_label = font.render(f"{attacker_name}'s card", True, (255, 255, 0))
+        defender_label = font.render(f"{defender_name}'s card", True, (0, 255, 255))
+        
+        self.display.blit(attacker_label, (left_card_x + self.card_width // 2 - attacker_label.get_width() // 2, 
+                                         center_y - self.card_height // 2 - 30))
+        self.display.blit(defender_label, (right_card_x + self.card_width // 2 - defender_label.get_width() // 2, 
+                                         center_y - self.card_height // 2 - 30))
+        
+        # Draw result based on the outcome
+        result_font = pygame.font.Font(None, 48)
+        vs_text = result_font.render("VS", True, (255, 255, 255))
+        self.display.blit(vs_text, (center_x - vs_text.get_width() // 2, center_y - vs_text.get_height() // 2))
+        
+        if result == "Success":
+            # Draw winning indicator for attacker
+            pygame.draw.rect(self.display, (0, 255, 0), 
+                           (left_card_x - 5, center_y - self.card_height // 2 - 5, 
+                            self.card_width + 10, self.card_height + 10), 3)
+            
+            # Draw X over defender's card
+            pygame.draw.line(self.display, (255, 0, 0), 
+                           (right_card_x, center_y - self.card_height // 2),
+                           (right_card_x + self.card_width, center_y + self.card_height // 2), 4)
+            pygame.draw.line(self.display, (255, 0, 0), 
+                           (right_card_x + self.card_width, center_y - self.card_height // 2),
+                           (right_card_x, center_y + self.card_height // 2), 4)
+            
+            result_text = result_font.render(f"{attacker_name} wins!", True, (0, 255, 0))
+        elif result == "Fail":
+            # Draw winning indicator for defender
+            pygame.draw.rect(self.display, (0, 255, 0), 
+                           (right_card_x - 5, center_y - self.card_height // 2 - 5, 
+                            self.card_width + 10, self.card_height + 10), 3)
+            
+            # Draw X over attacker's card
+            pygame.draw.line(self.display, (255, 0, 0), 
+                           (left_card_x, center_y - self.card_height // 2),
+                           (left_card_x + self.card_width, center_y + self.card_height // 2), 4)
+            pygame.draw.line(self.display, (255, 0, 0), 
+                           (left_card_x + self.card_width, center_y - self.card_height // 2),
+                           (left_card_x, center_y + self.card_height // 2), 4)
+            
+            result_text = result_font.render(f"{defender_name} wins!", True, (0, 255, 0))
+        else:
+            # Draw draw indicator
+            result_text = result_font.render("Draw!", True, (255, 255, 0))
+        
+        # Display the result text
+        self.display.blit(result_text, (center_x - result_text.get_width() // 2, center_y + self.card_height // 2 + 20))
+        
+        # Display card ranks
+        attacker_rank = font.render(f"Rank: {attacker_card.rank}", True, (255, 255, 255))
+        defender_rank = font.render(f"Rank: {defender_card.rank}", True, (255, 255, 255))
+        
+        self.display.blit(attacker_rank, (left_card_x + self.card_width // 2 - attacker_rank.get_width() // 2, 
+                                        center_y + self.card_height // 2 + 60))
+        self.display.blit(defender_rank, (right_card_x + self.card_width // 2 - defender_rank.get_width() // 2, 
+                                        center_y + self.card_height // 2 + 60))
+        
+        # Update the display
+        self.game.window.blit(self.game.display, (0, 0))
+        pygame.display.update()
+        pygame.time.delay(2000)  # 2 second delay
+        
+        # Restore original message
+        self.message = original_message
+        self.message_timer = original_timer
+
     def handle_player_attack(self, target_index):
         if self.engine.attacker != self.player:
             self.show_message("It's not your turn to attack!")
+            return
+        
+        # Store the target card for visualization
+        try:
+            target_card = self.computer.active_cards[target_index]
+        except:
             return
         
         result = self.engine.attack_handle(target_index)
         
         if result == "Success":
             self.show_message("Attack successful!")
+            
+            # Show the card battle visualization
+            self.show_card_battle_result(self.engine.attack_card, target_card, result)
             
             # Check if a goal was scored (all defender cards beaten)
             all_beaten = True
@@ -335,6 +450,10 @@ class GameInterface:
                     self.show_message("Computer's turn")
         elif result == "Fail":
             self.show_message("Attack failed!")
+            
+            # Show the card battle visualization
+            self.show_card_battle_result(self.engine.attack_card, target_card, result)
+            
             self.engine.change_turn()
             self.show_message("Computer's turn")
         else:
@@ -356,11 +475,20 @@ class GameInterface:
             self.engine.change_turn()
             return
         
+        # Store the target card for visualization
+        try:
+            target_card = self.player.active_cards[target_index]
+        except:
+            return
+        
         # Execute attack
         result = self.engine.attack_handle(target_index)
         
         if result == "Success":
             self.show_message("Computer's attack was successful!")
+            
+            # Show the card battle visualization
+            self.show_card_battle_result(self.engine.attack_card, target_card, result)
             
             # Check if a goal was scored (all defender cards beaten)
             all_beaten = True
@@ -398,6 +526,10 @@ class GameInterface:
                     self.engine.change_turn()
         elif result == "Fail":
             self.show_message("Computer's attack failed!")
+            
+            # Show the card battle visualization
+            self.show_card_battle_result(self.engine.attack_card, target_card, result)
+            
             self.engine.change_turn()
     
     def handle_draw_visualization(self):

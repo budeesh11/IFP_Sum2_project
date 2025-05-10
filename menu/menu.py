@@ -115,36 +115,81 @@ class VolumeSlider: #configuring the volume slider
         self.dragging = False
 
         self.container_rect = pygame.Rect(self.slider_left_pos, self.slider_top_pos, self.size[0], self.size[1])
-        self.button_rect = pygame.Rect(self.slider_left_pos + (self.size[0] * initial_value) - 5, 
-                                     self.slider_top_pos, 10, self.size[1])
+        self.button_rect = pygame.Rect(self.slider_left_pos + (self.size[0] * initial_value) - 10, 
+                                     self.slider_top_pos - 5, 20, self.size[1] + 10)
 
     def render(self, screen):
-        # slider background
-        pygame.draw.rect(screen, (255, 255, 255), self.container_rect)
-        # slider button
-        pygame.draw.rect(screen, (255, 0, 0), self.button_rect)
+        # Draw track
+        pygame.draw.rect(screen, (100, 100, 100), self.container_rect, border_radius=3)
+        
+        # Draw filled portion
+        filled_width = int(self.size[0] * self.value)
+        filled_rect = pygame.Rect(self.slider_left_pos, self.slider_top_pos, filled_width, self.size[1])
+        pygame.draw.rect(screen, (50, 150, 255), filled_rect, border_radius=3)
+        
+        # Draw slider button
+        button_color = (220, 220, 220) if self.dragging else (200, 200, 200)
+        pygame.draw.rect(screen, button_color, self.button_rect, border_radius=5)
+        
+        # Draw border around button
+        pygame.draw.rect(screen, (80, 80, 80), self.button_rect, width=2, border_radius=5)
 
-    def handle_event(self, event): #handles the event
-        if event.type == pygame.MOUSEBUTTONDOWN:
+    def update_button_position(self):
+        # Update button position based on current value
+        self.button_rect.x = self.slider_left_pos + (self.size[0] * self.value) - 10
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button
+            # Get raw mouse position
             mouse_pos = pygame.mouse.get_pos()
-            scale_x = self.game.DISPLAY_W / self.game.window.get_width()
-            scale_y = self.game.DISPLAY_H / self.game.window.get_height()
-            scaled_pos = (mouse_pos[0] * scale_x, mouse_pos[1] * scale_y)
             
-            if self.button_rect.collidepoint(scaled_pos):
+            # Create a rect for checking collision
+            check_rect = pygame.Rect(
+                self.button_rect.x * self.game.window.get_width() / self.game.DISPLAY_W,
+                self.button_rect.y * self.game.window.get_height() / self.game.DISPLAY_H,
+                self.button_rect.width * self.game.window.get_width() / self.game.DISPLAY_W,
+                self.button_rect.height * self.game.window.get_height() / self.game.DISPLAY_H
+            )
+            
+            # Check if click is on button
+            if check_rect.collidepoint(mouse_pos):
                 self.dragging = True
-        elif event.type == pygame.MOUSEBUTTONUP:
-            self.dragging = False
+                return True
+                
+            # Check if click is on slider track
+            check_track = pygame.Rect(
+                self.container_rect.x * self.game.window.get_width() / self.game.DISPLAY_W,
+                self.container_rect.y * self.game.window.get_height() / self.game.DISPLAY_H,
+                self.container_rect.width * self.game.window.get_width() / self.game.DISPLAY_W,
+                self.container_rect.height * self.game.window.get_height() / self.game.DISPLAY_H
+            )
+            
+            if check_track.collidepoint(mouse_pos):
+                self.dragging = True
+                # Update value based on click position
+                rel_x = (mouse_pos[0] - check_track.x) / check_track.width
+                self.value = max(0, min(1, rel_x))
+                self.update_button_position()
+                return True
+                
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            if self.dragging:
+                self.dragging = False
+                return True
+                
         elif event.type == pygame.MOUSEMOTION and self.dragging:
             mouse_pos = pygame.mouse.get_pos()
-            scale_x = self.game.DISPLAY_W / self.game.window.get_width()
-            scaled_x = mouse_pos[0] * scale_x
-
-            new_x = max(self.slider_left_pos, min(scaled_x, self.slider_right_pos))
-            self.button_rect.x = new_x - 5
-            self.value = (new_x - self.slider_left_pos) / self.size[0]
-            self.value = max(0, min(1, self.value))
+            
+            # Calculate track position in window coordinates
+            track_x = self.slider_left_pos * self.game.window.get_width() / self.game.DISPLAY_W
+            track_width = self.size[0] * self.game.window.get_width() / self.game.DISPLAY_W
+            
+            # Calculate relative position
+            rel_x = (mouse_pos[0] - track_x) / track_width
+            self.value = max(0, min(1, rel_x))
+            self.update_button_position()
             return True
+            
         return False
 
 class OptionsMenu(menu): #options menu
@@ -155,7 +200,12 @@ class OptionsMenu(menu): #options menu
         self.controlsx, self.controlsy = self.mid_w, self.mid_h + 120
         self.cursor_rect.midtop = (self.volx + self.offset, self.voly - 15)
         
-        initial_volume = pygame.mixer.music.get_volume()
+        # Set initial volume (default to 0.5 if not set)
+        try:
+            initial_volume = pygame.mixer.music.get_volume()
+        except:
+            initial_volume = 0.5
+            
         self.volume_slider = VolumeSlider(
             game=self.game,
             pos=(self.mid_w + 60, self.mid_h + 20),
@@ -187,6 +237,7 @@ class OptionsMenu(menu): #options menu
             self.game.draw_text("Volume", 36, self.game.WHITE, self.volx, self.voly)
             self.game.draw_text("Controls", 36, self.game.WHITE, self.controlsx, self.controlsy)
             
+            # Draw slider and volume percentage
             self.volume_slider.render(self.game.display)
             
             volume_percentage = int(self.volume_slider.value * 100)
@@ -196,15 +247,21 @@ class OptionsMenu(menu): #options menu
             self.blit_screen()
 
     def check_input(self):
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             
+            # Handle slider events
             if self.volume_slider.handle_event(event):
-                pygame.mixer.music.set_volume(self.volume_slider.value)
+                try:
+                    pygame.mixer.music.set_volume(self.volume_slider.value)
+                except:
+                    pass  # Music might not be initialized
+                continue
             
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_BACKSPACE:
                     self.game.curr_menu = self.game.main_menu
                     self.run_display = False
@@ -218,12 +275,18 @@ class OptionsMenu(menu): #options menu
                 elif self.state == "Volume":
                     if event.key == pygame.K_LEFT:
                         self.volume_slider.value = max(0, self.volume_slider.value - 0.05)
-                        self.volume_slider.button_rect.x = self.volume_slider.slider_left_pos + (self.volume_slider.size[0] * self.volume_slider.value) - 5
-                        pygame.mixer.music.set_volume(self.volume_slider.value)
+                        self.volume_slider.update_button_position()
+                        try:
+                            pygame.mixer.music.set_volume(self.volume_slider.value)
+                        except:
+                            pass
                     elif event.key == pygame.K_RIGHT:
-                        self.volume_slider.value = min(1, self.volume_slider.value + 0.01)
-                        self.volume_slider.button_rect.x = self.volume_slider.slider_left_pos + (self.volume_slider.size[0] * self.volume_slider.value) - 5
-                        pygame.mixer.music.set_volume(self.volume_slider.value)
+                        self.volume_slider.value = min(1, self.volume_slider.value + 0.05)
+                        self.volume_slider.update_button_position()
+                        try:
+                            pygame.mixer.music.set_volume(self.volume_slider.value)
+                        except:
+                            pass
 
 class InstructionsMenu(menu): #instructions menu
     def __init__(self, game):
