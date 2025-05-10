@@ -232,10 +232,14 @@ class InstructionsMenu(menu): #instructions menu
     def display_menu(self): 
         self.run_display = True
         while self.run_display:
-            self.game.check_events()
-            if self.game.START_KEY or self.game.BACK_KEY:
-                self.game.curr_menu = self.game.main_menu
-                self.run_display = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_BACKSPACE:
+                        self.game.curr_menu = self.game.main_menu
+                        self.run_display = False
             self.game.display.fill(self.game.BLACK)
             self.game.display.blit(self.game.instructions_image, (0, 0))
             self.blit_screen()
