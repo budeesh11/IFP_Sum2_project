@@ -420,7 +420,7 @@ class GameInterface:
                     break
             
             if all_beaten:
-                # Don't increment here as the engine already does it
+                # Don't increment here as the engine already does it FIXED: error that would occur when a goal is scored and score is incremented twice
                 self.show_message(f"GOAL! You scored! Score: {self.player.goals}-{self.computer.goals}")
             
             if self._check_game_over():
@@ -463,7 +463,7 @@ class GameInterface:
         if self.engine.attacker != self.computer:
             return
         
-        # Simulate thinking
+        # Simulate thinking (delay between computer's moves)
         pygame.time.delay(1000)
         
         # Get computer's attack choice
@@ -498,7 +498,7 @@ class GameInterface:
                     break
             
             if all_beaten:
-                # Don't increment here as the engine already does it
+                # Don't increment here as the engine already does it (same as line 423)
                 self.show_message(f"GOAL! Computer scored! Score: {self.player.goals}-{self.computer.goals}")
             
             if self._check_game_over():
@@ -534,7 +534,7 @@ class GameInterface:
     
     def handle_draw_visualization(self):
         """Visualize the draw process with intervals between each step"""
-        # Store the current state to restore later
+        #store the current state to restore later
         original_message = self.message
         original_timer = self.message_timer
         
@@ -560,7 +560,7 @@ class GameInterface:
         # Draw the background and game state
         self.display.blit(self.game.field_image, (0, 0))
         
-        # Add semi-transparent overlay for better visibility
+        # Add semi-transparent overlay for better visibility (during the draw visualization scenes)
         overlay = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 120))  # Dark semi-transparent overlay
         self.display.blit(overlay, (0, 0))

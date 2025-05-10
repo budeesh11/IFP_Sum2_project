@@ -75,7 +75,7 @@ class GameEngine():
         defender_value = self.CARD_RANKS.index(defender_card.rank)
         
         # Special rule: Ace beats everything except 6
-        # If attacker has Ace
+        # Scenario for when attacking card is an ace
         if self.attack_card.rank == 'A':
             if defender_card.rank == '6':  # 6 beats Ace
                 self.defender.deck.append(copy.copy(self.attack_card))
@@ -368,7 +368,7 @@ class GameEngine():
             ):
                 continue
             defender_strength = self.CARD_RANKS.index(defender_card.rank)
-            # print(f"[DEBUG] attacker_strength={attacker_strength}, defender_strength={defender_strength}")
+           
 
             # Special case for Ace
             if self.attack_card.rank == 'A':
@@ -388,8 +388,7 @@ class GameEngine():
                 base_score = 3
                 simulation_score = self._simulate_draws(defender_card)
                 base_score = base_score + simulation_score
-                # print(f"DEBUG: simulation returned {simulation_score}") 
-                # print(f"DEBUG: simulation +  base is {base_score}")
+                
             else:
                 base_score = -1
             
@@ -402,7 +401,7 @@ class GameEngine():
                 bonus_score = 0
 
             total = base_score + bonus_score
-            # print(f"[DEBUG] SCORE: {total}")
+            
 
             if total > attack_score:
                 attack_score = total
@@ -450,8 +449,7 @@ class GameEngine():
                 # Normal comparison
                 attacker_value = self.CARD_RANKS.index(attacker_draw.rank)
                 defender_value = self.CARD_RANKS.index(defender_draw.rank)
-                #print(f"[DEBUG] Attacker draws {attacker_draw.display()} ({attacker_value}), Defender draws {defender_draw.display()} ({defender_value})")
-                #print(f"[DEBUG] Pile now:", [card.display() for card in self.draw_pile_sim])
+                
 
                 if attacker_value > defender_value:
                     return len(self.draw_pile_sim)
