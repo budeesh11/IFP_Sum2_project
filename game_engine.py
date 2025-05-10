@@ -14,6 +14,7 @@ class GameEngine():
         self.defender = player
         
         self.last_draw_winner = None
+        self.last_draw_cards = []  # Store cards involved in the last draw
         
         self.CARD_SUITS = CARD_SUITS
         self.CARD_RANKS = CARD_RANKS
@@ -73,8 +74,34 @@ class GameEngine():
         attacker_value = self.CARD_RANKS.index(self.attack_card.rank)
         defender_value = self.CARD_RANKS.index(defender_card.rank)
         
-        
-        if (attacker_value > defender_value) or (attacker_value == 0 and defender_value == 8):
+        # Special rule: Ace beats everything except 6
+        # If attacker has Ace
+        if self.attack_card.rank == 'A':
+            if defender_card.rank == '6':  # 6 beats Ace
+                self.defender.deck.append(copy.copy(self.attack_card))
+                return "Fail"
+            elif defender_card.rank == 'A':  # Ace vs Ace is a draw
+                self._draw_handle(defender_card)
+                return "Draw"
+            else:  # Ace beats everything else
+                defender_card.card_state = CardState.BEATEN
+                self.battle_cards.append(copy.copy(self.attack_card))
+                self.battle_cards.append(copy.copy(defender_card))
+                self._check_goal_condition()
+                return "Success"
+        # If defender has Ace
+        elif defender_card.rank == 'A':
+            if self.attack_card.rank == '6':  # 6 beats Ace
+                defender_card.card_state = CardState.BEATEN
+                self.battle_cards.append(copy.copy(self.attack_card))
+                self.battle_cards.append(copy.copy(defender_card))
+                self._check_goal_condition()
+                return "Success"
+            else:  # Ace beats everything else
+                self.defender.deck.append(copy.copy(self.attack_card))
+                return "Fail"
+        # Normal comparison for other cards
+        elif attacker_value > defender_value:
             defender_card.card_state = CardState.BEATEN
             self.battle_cards.append(copy.copy(self.attack_card))
             self.battle_cards.append(copy.copy(defender_card))
@@ -119,8 +146,8 @@ class GameEngine():
         best_index = None
         best_defender_strength = -1
 
-        # First priority: Check if the computer has a 6 and can attack an Ace
-        if attacker_strength == 0: 
+        # Special case: If computer has a 6 and can attack an Ace
+        if self.attack_card.rank == '6':
             for i, defender_card in enumerate(self.defender.active_cards):
                 if defender_card.card_state == CardState.BEATEN:
                     continue
@@ -132,10 +159,32 @@ class GameEngine():
                 ):
                     continue
                     
-                defender_strength = self.CARD_RANKS.index(defender_card.rank)
-                if defender_strength == 8:  #
-                    return i 
+                if defender_card.rank == 'A':
+                    return i
 
+        # Special case: If computer has an Ace, it can beat anything except 6
+        if self.attack_card.rank == 'A':
+            for i, defender_card in enumerate(self.defender.active_cards):
+                if defender_card.card_state == CardState.BEATEN or defender_card.rank == '6':
+                    continue
+                    
+                if i == 0 and any(
+                    j < len(self.defender.active_cards) and
+                    self.defender.active_cards[j].card_state != CardState.BEATEN
+                    for j in [1, 2, 3]
+                ):
+                    continue
+                
+                # Prioritize higher value cards
+                defender_strength = self.CARD_RANKS.index(defender_card.rank)
+                if defender_strength > best_defender_strength:
+                    best_defender_strength = defender_strength
+                    best_index = i
+            
+            if best_index is not None:
+                return best_index
+
+        # Normal case for other cards
         for i, defender_card in enumerate(self.defender.active_cards):
             if defender_card.card_state == CardState.BEATEN:
                 continue
@@ -148,18 +197,18 @@ class GameEngine():
                 continue
 
             defender_strength = self.CARD_RANKS.index(defender_card.rank)
+            
+            # Check special case: if defender has Ace, computer can only beat it with 6
+            if defender_card.rank == 'A' and self.attack_card.rank != '6':
+                continue
 
-            # The goal of computer algorithm is to find and beat the highest possible card because when it will take it and after n amount of moves this card will show up
-            # There is a lot of place for creating algorithm here
-            # This the basic that I came with
-            # It is possible to improve it like creating memory so if it remembers what card it won earlier and how many cards left until it it can use it for attack
+            # The goal of computer algorithm is to find and beat the highest possible card
             if attacker_strength > defender_strength:
                 if defender_strength > best_defender_strength:
                     best_defender_strength = defender_strength
                     best_index = i
 
         # If no beatable cards, consider draw
-        # TODO: if somebody wants. Try to implement so it can compare how much profit it will get for draw and maybe go for it instead of just attacking
         if best_index is None:
             for i, defender_card in enumerate(self.defender.active_cards):
                 if defender_card.card_state == CardState.BEATEN:
@@ -190,12 +239,15 @@ class GameEngine():
             if not self.attacker.deck:
                 print(f"{self.defender.name} wins the draw (attacker out of cards)")
                 self.defender.deck.extend(self.draw_pile)
+                self.last_draw_winner = self.defender.name
+                self.last_draw_cards = self.draw_pile
                 break
             if not self.defender.deck:
                 print(f"{self.attacker.name} wins the draw (defender out of cards)")
                 self.attacker.deck.extend(self.draw_pile)
+                self.last_draw_winner = self.attacker.name
+                self.last_draw_cards = self.draw_pile
                 break
-            
             
             attacker_draw = self.attacker.deck.pop(0)
             defender_draw = self.defender.deck.pop(0)
@@ -203,6 +255,46 @@ class GameEngine():
             self.draw_pile.append(attacker_draw)
             self.draw_pile.append(defender_draw)
             
+            # Special case for Ace vs 6
+            if attacker_draw.rank == 'A' and defender_draw.rank == '6':
+                print(f"DEBUG: {self.defender.name} wins draw! (6 beats Ace)")
+                # Keep the attacker's card on the field
+                self.attack_card = attacker_draw
+                # Remove the attacker's card from the draw pile
+                self.draw_pile.remove(attacker_draw)
+                self.defender.deck.extend(self.draw_pile)
+                self.last_draw_winner = self.defender.name
+                self.last_draw_cards = self.draw_pile
+                break
+            elif attacker_draw.rank == '6' and defender_draw.rank == 'A':
+                print(f"DEBUG: {self.attacker.name} wins draw! (6 beats Ace)")
+                self.battle_cards.extend(self.draw_pile)
+                self.last_draw_winner = self.attacker.name
+                self.last_draw_cards = self.draw_pile
+                self._check_goal_condition()
+                break
+            elif attacker_draw.rank == 'A' and defender_draw.rank != '6':
+                print(f"DEBUG: {self.attacker.name} wins draw! (Ace beats {defender_draw.rank})")
+                self.battle_cards.extend(self.draw_pile)
+                self.last_draw_winner = self.attacker.name
+                self.last_draw_cards = self.draw_pile
+                self._check_goal_condition()
+                break
+            elif attacker_draw.rank != '6' and defender_draw.rank == 'A':
+                print(f"DEBUG: {self.defender.name} wins draw! (Ace beats {attacker_draw.rank})")
+                # Keep the attacker's card on the field
+                self.attack_card = attacker_draw
+                # Remove the attacker's card from the draw pile
+                self.draw_pile.remove(attacker_draw)
+                self.defender.deck.extend(self.draw_pile)
+                self.last_draw_winner = self.defender.name
+                self.last_draw_cards = self.draw_pile
+                break
+            elif attacker_draw.rank == 'A' and defender_draw.rank == 'A':
+                print(f"DEBUG: Ace vs Ace draw! Drawing again...")
+                continue
+            
+            # Normal comparison
             attacker_value = self.CARD_RANKS.index(attacker_draw.rank)
             defender_value = self.CARD_RANKS.index(defender_draw.rank)
 
@@ -210,12 +302,18 @@ class GameEngine():
                 print("DEBUG: " + self.attacker.name + " wins draw!")
                 self.battle_cards.extend(self.draw_pile)
                 self.last_draw_winner = self.attacker.name
+                self.last_draw_cards = self.draw_pile
                 self._check_goal_condition()
                 break
             if defender_value > attacker_value:
                 print("DEBUG: " + self.defender.name + " wins draw!")
+                # Keep the attacker's card on the field
+                self.attack_card = attacker_draw
+                # Remove the attacker's card from the draw pile
+                self.draw_pile.remove(attacker_draw)
                 self.defender.deck.extend(self.draw_pile)
                 self.last_draw_winner = self.defender.name
+                self.last_draw_cards = self.draw_pile
                 break
     
     def _check_win_condition(self):
@@ -244,6 +342,22 @@ class GameEngine():
             'J': 20
         }
 
+        # Special case: If computer has a 6 and can attack an Ace
+        if self.attack_card.rank == '6':
+            for i, defender_card in enumerate(self.defender.active_cards):
+                if defender_card.card_state == CardState.BEATEN:
+                    continue
+                    
+                if i == 0 and any(
+                    j < len(self.defender.active_cards) and
+                    self.defender.active_cards[j].card_state != CardState.BEATEN
+                    for j in [1, 2, 3]
+                ):
+                    continue
+                    
+                if defender_card.rank == 'A':
+                    return i
+
         for i, defender_card in enumerate(self.defender.active_cards):
             if defender_card.card_state == CardState.BEATEN:
                 continue
@@ -256,17 +370,26 @@ class GameEngine():
             defender_strength = self.CARD_RANKS.index(defender_card.rank)
             # print(f"[DEBUG] attacker_strength={attacker_strength}, defender_strength={defender_strength}")
 
-            # Win = 5, Draw = 3, Lose = -1
-            if (attacker_strength > defender_strength) or (attacker_strength == 0 and defender_strength == 8) :
+            # Special case for Ace
+            if self.attack_card.rank == 'A':
+                if defender_card.rank == '6':
+                    base_score = -1  # Ace loses to 6
+                else:
+                    base_score = 5   # Ace beats everything else
+            elif defender_card.rank == 'A':
+                if self.attack_card.rank == '6':
+                    base_score = 5   # 6 beats Ace
+                else:
+                    base_score = -1  # Everything else loses to Ace
+            # Normal cases
+            elif attacker_strength > defender_strength:
                 base_score = 5
-
             elif attacker_strength == defender_strength:
                 base_score = 3
                 simulation_score = self._simulate_draws(defender_card)
                 base_score = base_score + simulation_score
                 # print(f"DEBUG: simulation returned {simulation_score}") 
                 # print(f"DEBUG: simulation +  base is {base_score}")
-    
             else:
                 base_score = -1
             
@@ -314,6 +437,17 @@ class GameEngine():
                 self.draw_pile_sim.append(attacker_draw)
                 self.draw_pile_sim.append(defender_draw)
                 
+                # Special case for Ace vs 6
+                if attacker_draw.rank == 'A' and defender_draw.rank == '6':
+                    return -len(self.draw_pile_sim)  # Defender wins
+                elif attacker_draw.rank == '6' and defender_draw.rank == 'A':
+                    return len(self.draw_pile_sim)   # Attacker wins
+                elif attacker_draw.rank == 'A' and defender_draw.rank != '6':
+                    return len(self.draw_pile_sim)   # Attacker wins
+                elif attacker_draw.rank != '6' and defender_draw.rank == 'A':
+                    return -len(self.draw_pile_sim)  # Defender wins
+                
+                # Normal comparison
                 attacker_value = self.CARD_RANKS.index(attacker_draw.rank)
                 defender_value = self.CARD_RANKS.index(defender_draw.rank)
                 #print(f"[DEBUG] Attacker draws {attacker_draw.display()} ({attacker_value}), Defender draws {defender_draw.display()} ({defender_value})")
@@ -325,11 +459,15 @@ class GameEngine():
                 if defender_value > attacker_value:
                     return -len(self.draw_pile_sim)
 
-
-        
-    
-        
-                
+    def get_last_draw_info(self):
+        """Return information about the last draw"""
+        if not self.last_draw_cards:
+            return None
+            
+        return {
+            'cards': self.last_draw_cards,
+            'winner': self.last_draw_winner
+        }
     
         
     

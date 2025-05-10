@@ -1,4 +1,4 @@
-from tempfootball import game
+from menu.tempfootball import game
 import pygame
 
 g = game()

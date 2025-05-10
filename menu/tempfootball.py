@@ -2,7 +2,8 @@
 
 import pygame
 import sys
-from menu import *
+from menu.menu import MainMenu, OptionsMenu, InstructionsMenu
+from menu.game_interface import GameInterface
 
 class game():
     def __init__(self):
@@ -32,21 +33,29 @@ class game():
         pygame.mixer.music.play(-1) #plays the music on loop
         pygame.mixer.music.set_volume(0.5) #sets the volume to 50% intially
         self.pause = False
+        self.game_interface = None
 
 
     def game_loop(self): #performs the game functions
         while self.playing:
-            self.check_events()
-            if self.BACK_KEY:
-                self.playing = False #breaks the while loop without turning off the game
-            if self.pause:
-                self.show_pause_menu()
-                continue  # Skip the loop if paused
-            self.display.fill(self.BLACK) # Clear the screen first
-            self.display.blit(self.field_image, (0, 0)) # Draw the field image
-            self.window.blit(self.display, (0, 0)) #to align the display with the window
-            pygame.display.update() #updates the screen
-            self.reset() #resets the keys
+            if self.game_interface is None:
+                # Initialize game interface when game starts
+                self.game_interface = GameInterface(self)
+                self.game_interface.run()
+                self.game_interface = None  # Reset for next game
+                self.playing = False
+            else:
+                self.check_events()
+                if self.BACK_KEY:
+                    self.playing = False #breaks the while loop without turning off the game
+                if self.pause:
+                    self.show_pause_menu()
+                    continue  # Skip the loop if paused
+                self.display.fill(self.BLACK) # Clear the screen first
+                self.display.blit(self.field_image, (0, 0)) # Draw the field image
+                self.window.blit(self.display, (0, 0)) #to align the display with the window
+                pygame.display.update() #updates the screen
+                self.reset() #resets the keys
 
     #checks for player input by going through a list of everything a player can input
     def check_events(self):
@@ -111,13 +120,15 @@ class game():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = event.pos
                     if reset_rect.collidepoint(mouse_pos):
-                        self.reset_game()  # Rests the game state
+                        self.reset_game()  # Reset the game state
                         self.pause = False
                         paused = False
                     if return_rect.collidepoint(mouse_pos):
                         self.playing = False  # Exit game loop, return to main menu
                         self.pause = False
                         paused = False
+                        if self.game_interface:
+                            self.game_interface.running = False
 
             self.display.blit(self.field_image, (0, 0))
             # Draw transparent overlay
@@ -143,6 +154,12 @@ class game():
             pygame.time.delay(50)
 
     def reset_game(self):
-        # Placeholder for resetting the game state
-        # Add your game reset logic here
-        pass
+        # Reset the game state
+        if self.game_interface:
+            self.game_interface.initialize_game()
+            # Reset the scores
+            self.game_interface.player.goals = 0
+            self.game_interface.computer.goals = 0
+        else:
+            # If game interface doesn't exist yet, just continue
+            pass
