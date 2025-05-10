@@ -324,16 +324,15 @@ class GameInterface:
             # Check who won the draw
             draw_info = self.engine.get_last_draw_info()
             if draw_info and draw_info['winner'] == self.computer.name:
-                # If computer won the draw, change turn to computer
+                # If player lost the draw, change turn to computer
                 self.engine.change_turn()
-                self.show_message("Computer won the draw. Computer's turn now.")
+                self.show_message("You lost the draw. Computer's turn now.")
             else:
-                # If player won the draw, player continues attacking
+                # If player won the draw, keep player's turn
+                self.show_message("You won the draw. Your turn continues.")
                 if not self.engine.valid_for_next_attack():
                     self.engine.change_turn()
                     self.show_message("Computer's turn")
-                else:
-                    self.show_message("You won the draw. Continue your attack!")
         elif result == "Fail":
             self.show_message("Attack failed!")
             self.engine.change_turn()
@@ -389,15 +388,14 @@ class GameInterface:
             # Check who won the draw
             draw_info = self.engine.get_last_draw_info()
             if draw_info and draw_info['winner'] == self.player.name:
-                # If player won the draw, change turn to player
+                # If computer lost the draw, change turn to player
                 self.engine.change_turn()
-                self.show_message("You won the draw. Your turn now.")
+                self.show_message("Computer lost the draw. Your turn now.")
             else:
-                # If computer won the draw, computer continues attacking
+                # If computer won the draw, keep computer's turn
+                self.show_message("Computer won the draw. Computer's turn continues.")
                 if not self.engine.valid_for_next_attack():
                     self.engine.change_turn()
-                else:
-                    self.show_message("Computer won the draw. Computer continues attacking.")
         elif result == "Fail":
             self.show_message("Computer's attack failed!")
             self.engine.change_turn()
@@ -419,18 +417,89 @@ class GameInterface:
         draw_cards = draw_info['cards']
         winner = draw_info['winner']
         
+        # Center position for displaying cards
+        center_x = self.DISPLAY_W // 2
+        center_y = self.DISPLAY_H // 2
+        card_spacing = 60  # Increased space between the two cards in each pair
+        
         # Show initial cards that caused the draw
         self.show_message(f"Draw! {attacker_name}'s {draw_cards[0].rank}{draw_cards[0].suit[0]} vs {defender_name}'s {draw_cards[1].rank}{draw_cards[1].suit[0]}")
-        self.draw_game_state()
+        
+        # Draw the background and game state
+        self.display.blit(self.game.field_image, (0, 0))
+        
+        # Add semi-transparent overlay for better visibility
+        overlay = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 120))  # Dark semi-transparent overlay
+        self.display.blit(overlay, (0, 0))
+        
+        # Draw the initial pair of cards in the center with more space between them
+        left_card_x = center_x - self.card_width - card_spacing // 2
+        right_card_x = center_x + card_spacing // 2
+        
+        # Draw attacker's card
+        self.draw_card(draw_cards[0], left_card_x, center_y - self.card_height // 2)
+        
+        # Draw defender's card
+        self.draw_card(draw_cards[1], right_card_x, center_y - self.card_height // 2)
+        
+        # Draw labels for the cards with different colors and better positioning
+        font = pygame.font.Font(None, 24)
+        
+        # Attacker label (positioned above the card)
+        attacker_label = font.render(f"{attacker_name}'s card", True, (255, 255, 0))
+        self.display.blit(attacker_label, (left_card_x + self.card_width // 2 - attacker_label.get_width() // 2, 
+                                         center_y - self.card_height // 2 - 30))
+        
+        # Defender label (positioned above the card)
+        defender_label = font.render(f"{defender_name}'s card", True, (0, 255, 255))
+        self.display.blit(defender_label, (right_card_x + self.card_width // 2 - defender_label.get_width() // 2, 
+                                         center_y - self.card_height // 2 - 30))
+        
+        # Draw message at the top
+        message_font = pygame.font.Font(None, 36)
+        message_text = message_font.render(self.message, True, (255, 255, 255))
+        self.display.blit(message_text, (center_x - message_text.get_width() // 2, 50))
+        
+        # Update the display
         self.game.window.blit(self.game.display, (0, 0))
         pygame.display.update()
         pygame.time.delay(2000)  # 2 second delay
         
-        # Show each pair of cards drawn
+        # Show each pair of cards drawn in the draw battle
         for i in range(2, len(draw_cards), 2):
             if i+1 < len(draw_cards):
                 self.show_message(f"Draw continues! {attacker_name} draws {draw_cards[i].rank}{draw_cards[i].suit[0]}, {defender_name} draws {draw_cards[i+1].rank}{draw_cards[i+1].suit[0]}")
-                self.draw_game_state()
+                
+                # Redraw the background and overlay
+                self.display.blit(self.game.field_image, (0, 0))
+                self.display.blit(overlay, (0, 0))
+                
+                # Draw the new pair of cards
+                self.draw_card(draw_cards[i], left_card_x, center_y - self.card_height // 2)
+                self.draw_card(draw_cards[i+1], right_card_x, center_y - self.card_height // 2)
+                
+                # Draw labels for the cards with different colors and better positioning
+                self.display.blit(attacker_label, (left_card_x + self.card_width // 2 - attacker_label.get_width() // 2, 
+                                               center_y - self.card_height // 2 - 30))
+                self.display.blit(defender_label, (right_card_x + self.card_width // 2 - defender_label.get_width() // 2, 
+                                               center_y - self.card_height // 2 - 30))
+                
+                # Draw the draw count
+                draw_count = i // 2 + 1
+                count_text = message_font.render(f"Draw #{draw_count}", True, (255, 255, 0))
+                self.display.blit(count_text, (center_x - count_text.get_width() // 2, 20))
+                
+                # Draw message
+                message_text = message_font.render(self.message, True, (255, 255, 255))
+                self.display.blit(message_text, (center_x - message_text.get_width() // 2, 50))
+                
+                # Draw the pile count
+                pile_count = i + 2  # Number of cards in the draw pile so far
+                pile_text = font.render(f"Cards in draw pile: {pile_count}", True, (255, 255, 255))
+                self.display.blit(pile_text, (center_x - pile_text.get_width() // 2, center_y + self.card_height // 2 + 40))
+                
+                # Update the display
                 self.game.window.blit(self.game.display, (0, 0))
                 pygame.display.update()
                 pygame.time.delay(2000)  # 2 second delay
@@ -438,7 +507,47 @@ class GameInterface:
         # Show the winner
         if winner:
             self.show_message(f"{winner} wins the draw! All cards go to {winner}'s deck.")
-            self.draw_game_state()
+            
+            # Redraw the background and overlay
+            self.display.blit(self.game.field_image, (0, 0))
+            self.display.blit(overlay, (0, 0))
+            
+            # Draw the last pair of cards
+            last_attacker_card = draw_cards[-2] if len(draw_cards) >= 2 else draw_cards[0]
+            last_defender_card = draw_cards[-1] if len(draw_cards) >= 2 else draw_cards[1]
+            
+            self.draw_card(last_attacker_card, left_card_x, center_y - self.card_height // 2)
+            self.draw_card(last_defender_card, right_card_x, center_y - self.card_height // 2)
+            
+            # Draw labels for the cards with different colors and better positioning
+            self.display.blit(attacker_label, (left_card_x + self.card_width // 2 - attacker_label.get_width() // 2, 
+                                           center_y - self.card_height // 2 - 30))
+            self.display.blit(defender_label, (right_card_x + self.card_width // 2 - defender_label.get_width() // 2, 
+                                           center_y - self.card_height // 2 - 30))
+            
+            # Highlight the winner's card with a glowing effect
+            winner_card_x = left_card_x if winner == attacker_name else right_card_x
+            glow_size = 10
+            glow_rect = pygame.Rect(winner_card_x - glow_size, 
+                                  center_y - self.card_height // 2 - glow_size,
+                                  self.card_width + glow_size * 2, 
+                                  self.card_height + glow_size * 2)
+            pygame.draw.rect(self.display, (255, 215, 0, 150), glow_rect, border_radius=5)
+            
+            # Draw winner message
+            winner_text = message_font.render(f"{winner} WINS THE DRAW!", True, (255, 215, 0))
+            self.display.blit(winner_text, (center_x - winner_text.get_width() // 2, 20))
+            
+            # Draw message
+            message_text = message_font.render(self.message, True, (255, 255, 255))
+            self.display.blit(message_text, (center_x - message_text.get_width() // 2, 50))
+            
+            # Draw the pile count
+            pile_count = len(draw_cards)
+            pile_text = font.render(f"Total cards won: {pile_count}", True, (255, 255, 255))
+            self.display.blit(pile_text, (center_x - pile_text.get_width() // 2, center_y + self.card_height // 2 + 40))
+            
+            # Update the display
             self.game.window.blit(self.game.display, (0, 0))
             pygame.display.update()
             pygame.time.delay(2000)  # 2 second delay
