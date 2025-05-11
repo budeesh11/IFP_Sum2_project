@@ -108,6 +108,10 @@ class game():
         return_rect = pygame.Rect(center_x + button_padding//2, center_y + 30, button_width, button_height)
         font = pygame.font.Font(self.font_name, 36)
         small_font = pygame.font.Font(self.font_name, 28)
+        
+        # Capture the current display before adding the pause overlay
+        current_display = self.display.copy()
+        
         while paused:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -130,11 +134,14 @@ class game():
                         if self.game_interface:
                             self.game_interface.running = False
 
-            self.display.blit(self.field_image, (0, 0))
+            # Use the captured current display instead of field_image
+            self.display.blit(current_display, (0, 0))
+            
             # Draw transparent overlay
             overlay = pygame.Surface((self.DISPLAY_W, self.DISPLAY_H), pygame.SRCALPHA)
             overlay.fill((128, 128, 128, 150))
             self.display.blit(overlay, (0, 0))
+            
             # Draw main pause box
             pygame.draw.rect(self.display, (40, 40, 40), box_rect, border_radius=10)
             # Draw buttons
