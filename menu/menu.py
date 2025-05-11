@@ -197,7 +197,6 @@ class OptionsMenu(menu): #options menu
         menu.__init__(self, game)
         self.state = "Volume"
         self.volx, self.voly = self.mid_w, self.mid_h - 40
-        self.controlsx, self.controlsy = self.mid_w, self.mid_h + 120
         self.cursor_rect.midtop = (self.volx + self.offset, self.voly - 15)
         
         # Set initial volume (default to 0.5 if not set)
@@ -220,22 +219,13 @@ class OptionsMenu(menu): #options menu
             self.game.display.fill(self.game.BLACK)
             self.game.display.blit(self.game.options_image, (0, 0))
             
-            #background rectangles
+            #background rectangle
             volume_rect = pygame.Rect(self.volx + self.offset, self.voly - 15, 400, 50)
-            controls_rect = pygame.Rect(self.controlsx + self.offset, self.controlsy - 15, 400, 50)
             
-            #unselected options
-            pygame.draw.rect(self.game.display, self.unselected_color, volume_rect)
-            pygame.draw.rect(self.game.display, self.unselected_color, controls_rect)
-            
-            #selected option highlight
-            if self.state == "Volume":
-                pygame.draw.rect(self.game.display, self.selected_color, volume_rect)
-            elif self.state == "Controls":
-                pygame.draw.rect(self.game.display, self.selected_color, controls_rect)
+            #volume option highlight
+            pygame.draw.rect(self.game.display, self.selected_color, volume_rect)
             
             self.game.draw_text("Volume", 36, self.game.WHITE, self.volx, self.voly)
-            self.game.draw_text("Controls", 36, self.game.WHITE, self.controlsx, self.controlsy)
             
             # Draw slider and volume percentage
             self.volume_slider.render(self.game.display)
@@ -265,28 +255,20 @@ class OptionsMenu(menu): #options menu
                 if event.key == pygame.K_BACKSPACE:
                     self.game.curr_menu = self.game.main_menu
                     self.run_display = False
-                elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                    if self.state == "Volume":
-                        self.state = "Controls"
-                        self.cursor_rect.midtop = (self.controlsx + self.offset, self.controlsy - 15)
-                    elif self.state == "Controls":
-                        self.state = "Volume"
-                        self.cursor_rect.midtop = (self.volx + self.offset, self.voly - 15)
-                elif self.state == "Volume":
-                    if event.key == pygame.K_LEFT:
-                        self.volume_slider.value = max(0, self.volume_slider.value - 0.05)
-                        self.volume_slider.update_button_position()
-                        try:
-                            pygame.mixer.music.set_volume(self.volume_slider.value)
-                        except:
-                            pass
-                    elif event.key == pygame.K_RIGHT:
-                        self.volume_slider.value = min(1, self.volume_slider.value + 0.05)
-                        self.volume_slider.update_button_position()
-                        try:
-                            pygame.mixer.music.set_volume(self.volume_slider.value)
-                        except:
-                            pass
+                elif event.key == pygame.K_LEFT:
+                    self.volume_slider.value = max(0, self.volume_slider.value - 0.05)
+                    self.volume_slider.update_button_position()
+                    try:
+                        pygame.mixer.music.set_volume(self.volume_slider.value)
+                    except:
+                        pass
+                elif event.key == pygame.K_RIGHT:
+                    self.volume_slider.value = min(1, self.volume_slider.value + 0.05)
+                    self.volume_slider.update_button_position()
+                    try:
+                        pygame.mixer.music.set_volume(self.volume_slider.value)
+                    except:
+                        pass
 
 class InstructionsMenu(menu): #instructions menu
     def __init__(self, game):
