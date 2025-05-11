@@ -5,56 +5,33 @@ This is a strategic card battle game where players compete by placing cards on t
 
 3 Defenders
 
-To score a goal, you must first defeat the defenders before challenging the goalkeeper. Players take turns making moves.
+To score a goal, you must first defeat the defenders before challenging the goalkeeper. 
 
-Game Modes:
-
-Play against a computer opponent
-
-Play in 2-player mode on the same device
-
-Additional Features:
-
-Level progression system
-
-Customizable card appearance
 
 🎮 How to Play
-When the game needs you to act, it will signal using a colored frame or a ball icon in the center of the screen.
-Tap or hold to proceed.
 
-⚔️ Gameplay Flow
 Each player starts with 1 goalkeeper card and 3 defender cards.
-
-The first move is decided randomly.
 
 Players take turns attacking the opponent's field.
 
 You must defeat all defenders before you can attack the goalkeeper.
 
-Defeated cards go to the discard pile and are used to rebuild the deck later.
+If an attack is successful, the cards go to the attacker's deck.
 
-🥅 How to Win Points
-Score a goal by defeating the goalkeeper.
+If an attack fails, the cards go to the defender's deck
 
-Or deplete the opponent's deck so they can't make a required move.
 
 📈 Card Strength & Special Situations
 Cards range from 6 to Ace, where Ace beats 6.
 
 If two cards are equal:
 
-Both players place one card face down, then one card face up.
+Both players take turns placing one card on top of another and the cards are compared.
 
-The new face-up cards are compared.
 
-⏱ Match Structure
-Each match has 2 halves.
+🥅 How to Win 
+1. Score a goal by defeating the goalkeeper. First one to score 3 goals Wins
 
-Each half ends after:
+2. Deplete the opponent's deck so they can't make a required move such as attacking.
 
-45 conditional minutes, plus
 
-10 seconds for each card played
-
-Or when a player runs out of cards
