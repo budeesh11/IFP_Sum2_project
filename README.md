@@ -1,6 +1,6 @@
 # CardBall
 
-This is a project developed by Majed, Pratish Sam and Salavat for IFP CS Summative Assesment 2. 
+This is a project developed by Majed, Pratish, Sam and Salavat for IFP CS Summative Assesment 2. 
 
 ## Installation
 
