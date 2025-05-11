@@ -15,6 +15,7 @@ class game():
         self.font_name = None  # Using default system font
         self.font = pygame.font.Font(self.font_name, 32) #use default system font with size 32
         self.BLACK, self.WHITE, self.GREEN, self.RED, self.BLUE = (0, 0, 0), (255, 255, 255), (0, 100, 0), (200, 0, 0), (0, 0, 200) #colors
+        self.caption = pygame.display.set_caption("CardBall")
         # Load and scale background images
         self.background_image = pygame.image.load("menu/graphics/CardBall.png").convert()
         self.background_image = pygame.transform.scale(self.background_image, (self.DISPLAY_W, self.DISPLAY_H))
