@@ -24,7 +24,7 @@ class GameInterface:
         # Game state
         self.running = True
         self.CARD_SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
-        self.CARD_RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+        self.CARD_RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         
         # Initialize deck and players
         self.initialize_game()

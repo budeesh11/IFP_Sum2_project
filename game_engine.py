@@ -369,19 +369,19 @@ class GameEngine():
                 continue
             defender_strength = self.CARD_RANKS.index(defender_card.rank)
            
-
+            # Win = 5, Draw, = 3, Lose = -1
             # Special case for Ace
             if self.attack_card.rank == 'A':
                 if defender_card.rank == '6':
-                    base_score = -1  # Ace loses to 6
+                    base_score = -1 
                 else:
-                    base_score = 5   # Ace beats everything else
+                    base_score = 5   
             elif defender_card.rank == 'A':
                 if self.attack_card.rank == '6':
-                    base_score = 5   # 6 beats Ace
+                    base_score = 5   
                 else:
-                    base_score = -1  # Everything else loses to Ace
-            # Normal cases
+                    base_score = -1  
+            
             elif attacker_strength > defender_strength:
                 base_score = 5
             elif attacker_strength == defender_strength:
