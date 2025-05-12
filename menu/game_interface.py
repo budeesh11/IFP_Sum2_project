@@ -432,7 +432,6 @@ class GameInterface:
                     break
             
             if all_beaten:
-                # Don't increment here as the engine already does it FIXED: error that would occur when a goal is scored and score is incremented twice
                 self.show_message(f"GOAL! You scored! Score: {self.player.goals}-{self.computer.goals}")
             
             if self._check_game_over():
@@ -512,7 +511,6 @@ class GameInterface:
                     break
             
             if all_beaten:
-                # Don't increment here as the engine already does it (same as line 423)
                 self.show_message(f"GOAL! Computer scored! Score: {self.player.goals}-{self.computer.goals}")
             
             if self._check_game_over():
