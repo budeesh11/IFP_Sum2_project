@@ -13,7 +13,7 @@ class menu():
         self.selected_color = self.game.RED  # Color for selected option
         self.unselected_color = (50, 50, 50)  # Dark gray for unselected options
 
-    def display_controls(self, surface, controls):
+    def display_controls(self, surface, controls): #displays the controls
         color = (255, 255, 255) if self.selected else (255, 250, 239)
         pygame.draw.rect(surface, color, (80, 270/4 - 10 + (self.curr_index*30), 320, 20))
         i = 0
