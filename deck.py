@@ -1,3 +1,4 @@
+# 5663074
 import random
 from card import Card
 
@@ -24,3 +25,4 @@ class Deck:
         cards_return = self.cards[:cards_number]
         self.cards = self.cards[cards_number:]
         return cards_return
+# 5663074

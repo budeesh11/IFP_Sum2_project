@@ -1,3 +1,4 @@
+# 5663074
 class Player:
     def __init__(self, name, deck: list):
         self.name = name
@@ -15,3 +16,4 @@ class Player:
         for card in self.active_cards:
             result += str(self.active_cards.index(card)) + ". " + card.display() +" "
         return result
+# 5663074
