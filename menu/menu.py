@@ -1,3 +1,4 @@
+#5660585
 import pygame
 import sys
 
@@ -288,3 +289,4 @@ class InstructionsMenu(menu): #instructions menu
             self.game.display.fill(self.game.BLACK)
             self.game.display.blit(self.game.instructions_image, (0, 0))
             self.blit_screen()
+#5660585
