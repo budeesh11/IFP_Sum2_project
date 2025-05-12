@@ -4,7 +4,7 @@ import os
 import random
 import sys
 import os
-
+# 5634499, #5660585, 
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -14,6 +14,7 @@ from card import Card
 from card_state import CardState
 from game_engine import GameEngine
 
+# 5634499, #5660585, 
 class GameInterface:
     def __init__(self, game):
         self.game = game
@@ -41,7 +42,7 @@ class GameInterface:
         self.card_images = {}
         self.card_back = None
         self.load_card_images()
-    
+    # 5634499
     def initialize_game(self):
         # Create a deck
         deck = Deck(self.CARD_SUITS, self.CARD_RANKS)
@@ -87,7 +88,9 @@ class GameInterface:
         
         # Reset game state
         self.running = True
-    
+    # 5634499
+
+    # 5634499
     def load_card_images(self):
         # Try to load card images from Cards folder
         try:
@@ -122,7 +125,9 @@ class GameInterface:
             for suit in self.CARD_SUITS:
                 for rank in self.CARD_RANKS:
                     self.create_default_card(suit, rank)
-    
+    # 5634499
+
+    # 5634499 (This chunk of code is not being fully used anymore, only if image loading fails)
     def create_default_card(self, suit, rank):
         card_key = f"{suit[0]}{rank}"
         card_surface = pygame.Surface((self.card_width, self.card_height))
@@ -152,7 +157,7 @@ class GameInterface:
                                        self.card_height // 2 - center_text.get_height() // 2))
         
         self.card_images[card_key] = card_surface
-    
+    # 5634499
     def draw_card(self, card, x, y, is_beaten=False, is_selected=False, is_goalkeeper=False):
         if card is None:
             return
@@ -184,6 +189,7 @@ class GameInterface:
             gk_text = font.render("GK", True, (255, 0, 0))
             self.display.blit(gk_text, (x + self.card_width // 2 - gk_text.get_width() // 2, y - 20))
     
+    # 5634499
     def draw_game_state(self):
         # Clear screen with field background
         self.display.blit(self.game.field_image, (0, 0))
@@ -201,9 +207,9 @@ class GameInterface:
         self.display.blit(player_deck_text, (20, self.DISPLAY_H - 40))
         self.display.blit(computer_deck_text, (self.DISPLAY_W - computer_deck_text.get_width() - 20, 80))
         
-        # Draw current attacker/defender status
+        # Draw current attacker/defender status - moved to left side
         turn_text = font.render(f"{'Player' if self.engine.attacker == self.player else 'Computer'} is attacking", True, (255, 255, 0))
-        self.display.blit(turn_text, (self.DISPLAY_W // 2 - turn_text.get_width() // 2, 20))
+        self.display.blit(turn_text, (20, 60))
         
         # Calculate vertical positions with much more space
         # Computer cards moved much higher up
@@ -227,8 +233,8 @@ class GameInterface:
             
             self.draw_card(self.engine.attack_card, attack_x, attack_card_y)
             attack_text = font.render("Attack Card", True, (255, 255, 255))
-            self.display.blit(attack_text, (attack_x + self.card_width // 2 - attack_text.get_width() // 2, 
-                                          attack_card_y - 30))
+            # Position the attack card text to the right side of the card
+            self.display.blit(attack_text, (attack_x + self.card_width + 10, attack_card_y))
         
         # Draw computer's active cards in the football formation (1 GK, 3 defenders)
         # Goalkeeper
@@ -286,11 +292,15 @@ class GameInterface:
             
             self.display.blit(message_text, (message_x, message_y))
             self.message_timer -= 1
-    
+    # 5634499
+
+    # 5634499
     def show_message(self, message, duration=120):
         self.message = message
         self.message_timer = duration
-    
+    #5634499
+
+    # 5634499
     def show_card_battle_result(self, attacker_card, defender_card, result):
         """Show a visual comparison of the attacking and defending cards with the result"""
         # Store the current state to restore later
@@ -392,7 +402,9 @@ class GameInterface:
         # Restore original message
         self.message = original_message
         self.message_timer = original_timer
+    # 5634499
 
+    # 5660585
     def handle_player_attack(self, target_index):
         if self.engine.attacker != self.player:
             self.show_message("It's not your turn to attack!")
@@ -458,7 +470,9 @@ class GameInterface:
             self.show_message("Computer's turn")
         else:
             self.show_message(result)  # Show any other message/error
-    
+    # 5660585
+
+    # 5660585
     def handle_computer_turn(self):
         if self.engine.attacker != self.computer:
             return
@@ -531,7 +545,9 @@ class GameInterface:
             self.show_card_battle_result(self.engine.attack_card, target_card, result)
             
             self.engine.change_turn()
-    
+    # 5660585
+
+    # 5634499
     def handle_draw_visualization(self):
         """Visualize the draw process with intervals between each step"""
         #store the current state to restore later
@@ -552,7 +568,7 @@ class GameInterface:
         # Center position for displaying cards
         center_x = self.DISPLAY_W // 2
         center_y = self.DISPLAY_H // 2
-        card_spacing = 60  # Increased space between the two cards in each pair
+        card_spacing = 60  # Increased space between the two cards in each pair (previously too close)
         
         # Show initial cards that caused the draw
         self.show_message(f"Draw! {attacker_name}'s {draw_cards[0].rank}{draw_cards[0].suit[0]} vs {defender_name}'s {draw_cards[1].rank}{draw_cards[1].suit[0]}")
@@ -565,7 +581,7 @@ class GameInterface:
         overlay.fill((0, 0, 0, 120))  # Dark semi-transparent overlay
         self.display.blit(overlay, (0, 0))
         
-        # Draw the initial pair of cards in the center with more space between them
+        # Draw the initial pair of cards in the center with more space between them (previously too close as well)
         left_card_x = center_x - self.card_width - card_spacing // 2
         right_card_x = center_x + card_spacing // 2
         
@@ -687,7 +703,9 @@ class GameInterface:
         # Restore original message
         self.message = original_message
         self.message_timer = original_timer
-    
+    # 5634499
+
+    # 5634499
     def _check_game_over(self):
         if self.player.goals >= 3:
             self.show_message(f"You win! You scored 3 goals! Final score: {self.player.goals}-{self.computer.goals}")
@@ -706,7 +724,9 @@ class GameInterface:
             self.engine.game_running = False
             return True
         return False
-    
+    # 5634499
+
+    # 5634499
     def get_computer_card_at_position(self, mouse_pos):
         # Calculate vertical positions
         computer_gk_y = 30
@@ -730,7 +750,9 @@ class GameInterface:
                 return i
         
         return None
-    
+    # 5634499
+
+    # 5634499
     def get_player_card_at_position(self, mouse_pos):
         # Calculate vertical positions
         player_defenders_y = self.DISPLAY_H - self.card_height * 2 - 80
@@ -754,7 +776,9 @@ class GameInterface:
                 return i
         
         return None
-    
+    # 5634499
+
+    # 5634499
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -793,6 +817,7 @@ class GameInterface:
                 if player_card_index is not None:
                     self.selected_card_index = player_card_index
     
+    # 5634499
     def run(self):
         clock = pygame.time.Clock()
         
@@ -811,11 +836,11 @@ class GameInterface:
             
             self.game.window.blit(self.game.display, (0, 0))
             pygame.display.update()
-            clock.tick(60)
+            clock.tick(60) 
         
         # Show game over screen
         self.show_game_over()
-    
+    # 5634499
     def show_game_over(self):
         if not self.engine.game_running:
             font = pygame.font.Font(None, 72)
@@ -870,3 +895,4 @@ class GameInterface:
                 
                 self.game.window.blit(self.game.display, (0, 0))
                 pygame.display.update() 
+    # 5634499
