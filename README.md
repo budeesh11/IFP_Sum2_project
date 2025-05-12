@@ -33,6 +33,14 @@ This is a project developed by Majed, Pratish, Sam and Salavat for IFP CS Summat
    ```bash
    python -m menu.main
    ```
+5. To switch to harder difficulty, go to the game_interface.py file and change line 484 to:
+   ```bash
+        target_index = self.engine._harder_computer_attack()
+   ```
+6. To return the original difficulty, go to the game_interface.py file and change line 484 to:
+   ```bash
+        target_index = self.engine.computer_attack()
+   ```
 
 ## Game Controls
 
