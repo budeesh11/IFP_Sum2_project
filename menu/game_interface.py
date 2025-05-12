@@ -276,7 +276,7 @@ class GameInterface:
         
         # Draw "Goalkeeper" text
         gk_label = font.render("Goalkeeper", True, (255, 255, 255))
-        self.display.blit(gk_label, (self.DISPLAY_W // 2 - gk_label.get_width() // 2, player_gk_y + self.card_height + 10))
+        self.display.blit(gk_label, (self.DISPLAY_W // 2 - gk_label.get_width() // 2, player_gk_y + self.card_height))
         
         # Draw message if there is one
         if self.message and self.message_timer > 0:
