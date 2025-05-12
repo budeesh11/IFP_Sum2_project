@@ -1,3 +1,4 @@
+# 5663074
 from enum import Enum
 
 class CardState(Enum):
@@ -13,3 +14,4 @@ class CardState(Enum):
     PLAYER_DECK = "PLAYER_DECK"
     COMPUTER_DECK_ACTIVE = "COMPUTER_DECK_ACTIVE"
     PLAYER_DECK_ACTIVE = "PLAYER_DECK_ACTIVE"
+# 5663074

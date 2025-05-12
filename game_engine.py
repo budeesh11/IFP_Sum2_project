@@ -26,7 +26,7 @@ class GameEngine():
         self.game_running = True
     
     # This method should be completed and if changed can be still used like this
-    def change_turn(self):
+    def change_turn(self): # 5663074
         
         # Add all cards that attacker won to his deck
         for card in self.battle_cards:
@@ -50,8 +50,7 @@ class GameEngine():
         self.defender.draw_active_cards()
     
     # index is the index of target card in active cards of opponent
-    def attack_handle(self, target_card_index: int):
-        
+    def attack_handle(self, target_card_index: int): # 5663074 
         # Protection for possible invalid target choice. Helpful even when I will lock most of dangerous inputs
         try:
             target = self.defender.active_cards[target_card_index]
@@ -70,7 +69,7 @@ class GameEngine():
         result = self._resolve_attack_type(target)
         return result
     
-    def _resolve_attack_type(self, defender_card: Card):
+    def _resolve_attack_type(self, defender_card: Card): # 5663074 # 5677723
         attacker_value = self.CARD_RANKS.index(self.attack_card.rank)
         defender_value = self.CARD_RANKS.index(defender_card.rank)
         
@@ -114,7 +113,7 @@ class GameEngine():
             self.defender.deck.append(copy.copy(self.attack_card))
             return "Fail"
     
-    def valid_for_next_attack(self):
+    def valid_for_next_attack(self): # 5663074
         if not self.attacker.deck:
             return False
         if all(card.card_state == CardState.BEATEN for card in self.defender.active_cards):
@@ -137,7 +136,7 @@ class GameEngine():
             self.attacker.goals += 1
             print("Goal! " + self.attacker.name + " scored!")
     
-    def computer_attack(self):
+    def computer_attack(self): # 5663074
         print("Computer thinks...")
         time.sleep(1)
         if not self.attack_card:
@@ -228,7 +227,7 @@ class GameEngine():
     def attack_end(self):
         self.defender.deck.append(copy.copy(self.attack_card))
     
-    def _draw_handle(self, defender_card: Card):
+    def _draw_handle(self, defender_card: Card): # 5663074
         self.draw_pile = []
         self.draw_pile = [self.attack_card, copy.copy(defender_card)]
         
@@ -316,13 +315,13 @@ class GameEngine():
                 self.last_draw_cards = self.draw_pile
                 break
     
-    def _check_win_condition(self):
+    def _check_win_condition(self): # 5663074
         if self.attacker.goals == 3 or self.defender.goals == 3 or len(self.attacker.deck) == 0 or len(self.defender.deck) == 0:
             self.game_running = False
             return True
         return False
     
-    def _harder_computer_attack(self):
+    def _harder_computer_attack(self):# 5677723
         # Does same thing as original except it now simulates draws and gauges possible gains 
         # Uncomment print statements to see how it works
 
@@ -457,7 +456,7 @@ class GameEngine():
                 if defender_value > attacker_value:
                     return -len(self.draw_pile_sim)
 
-    def get_last_draw_info(self):
+    def get_last_draw_info(self): # 5634499
         """Return information about the last draw"""
         if not self.last_draw_cards:
             return None
