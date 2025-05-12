@@ -25,7 +25,7 @@ class GameInterface:
         # Game state
         self.running = True
         self.CARD_SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
-        self.CARD_RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+        self.CARD_RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         
         # Initialize deck and players
         self.initialize_game()
@@ -90,7 +90,7 @@ class GameInterface:
         self.running = True
     # 5634499
 
-    # 5660585
+    # 5634499
     def load_card_images(self):
         # Try to load card images from Cards folder
         try:
@@ -125,7 +125,7 @@ class GameInterface:
             for suit in self.CARD_SUITS:
                 for rank in self.CARD_RANKS:
                     self.create_default_card(suit, rank)
-    # 5660585
+    # 5634499
 
     # 5634499 (This chunk of code is not being fully used anymore, only if image loading fails)
     def create_default_card(self, suit, rank):
@@ -157,7 +157,7 @@ class GameInterface:
                                        self.card_height // 2 - center_text.get_height() // 2))
         
         self.card_images[card_key] = card_surface
-    # 5660585
+    # 5634499
     def draw_card(self, card, x, y, is_beaten=False, is_selected=False, is_goalkeeper=False):
         if card is None:
             return
@@ -207,9 +207,9 @@ class GameInterface:
         self.display.blit(player_deck_text, (20, self.DISPLAY_H - 40))
         self.display.blit(computer_deck_text, (self.DISPLAY_W - computer_deck_text.get_width() - 20, 80))
         
-        # Draw current attacker/defender status
+        # Draw current attacker/defender status - moved to left side
         turn_text = font.render(f"{'Player' if self.engine.attacker == self.player else 'Computer'} is attacking", True, (255, 255, 0))
-        self.display.blit(turn_text, (self.DISPLAY_W // 2 - turn_text.get_width() // 2, 20))
+        self.display.blit(turn_text, (20, 60))
         
         # Calculate vertical positions with much more space
         # Computer cards moved much higher up
@@ -233,8 +233,8 @@ class GameInterface:
             
             self.draw_card(self.engine.attack_card, attack_x, attack_card_y)
             attack_text = font.render("Attack Card", True, (255, 255, 255))
-            self.display.blit(attack_text, (attack_x + self.card_width // 2 - attack_text.get_width() // 2, 
-                                          attack_card_y - 30))
+            # Position the attack card text to the right side of the card
+            self.display.blit(attack_text, (attack_x + self.card_width + 10, attack_card_y))
         
         # Draw computer's active cards in the football formation (1 GK, 3 defenders)
         # Goalkeeper
@@ -472,7 +472,7 @@ class GameInterface:
             self.show_message(result)  # Show any other message/error
     # 5660585
 
-    # 5634499
+    # 5660585
     def handle_computer_turn(self):
         if self.engine.attacker != self.computer:
             return
@@ -545,7 +545,7 @@ class GameInterface:
             self.show_card_battle_result(self.engine.attack_card, target_card, result)
             
             self.engine.change_turn()
-    # 5634499
+    # 5660585
 
     # 5634499
     def handle_draw_visualization(self):
@@ -726,7 +726,7 @@ class GameInterface:
         return False
     # 5634499
 
-    # 5660585
+    # 5634499
     def get_computer_card_at_position(self, mouse_pos):
         # Calculate vertical positions
         computer_gk_y = 30
@@ -750,7 +750,7 @@ class GameInterface:
                 return i
         
         return None
-    # 5660585
+    # 5634499
 
     # 5634499
     def get_player_card_at_position(self, mouse_pos):
@@ -836,7 +836,7 @@ class GameInterface:
             
             self.game.window.blit(self.game.display, (0, 0))
             pygame.display.update()
-            clock.tick(60)
+            clock.tick(60) 
         
         # Show game over screen
         self.show_game_over()
